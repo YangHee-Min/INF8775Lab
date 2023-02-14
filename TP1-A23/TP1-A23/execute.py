@@ -1,6 +1,6 @@
 from read_matrix import read_matrix
 from conv import conv
-from strassen import strassen, strassen_threshold
+from strassenv2 import strassen, strassen_threshold
 from method import Method
 from time import time
 
@@ -28,3 +28,9 @@ def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
     if is_time:
         print("Total loading time: %sms" % loading_time)
         print("Total execution time: %sms" % execution_time)
+
+    return execution_time
+
+
+if __name__ == "__main__":
+    print(execute("ex6_0", "ex6_1", Method.CONV))
