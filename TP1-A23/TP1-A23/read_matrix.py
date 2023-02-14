@@ -13,11 +13,3 @@ def get_dim_matrix(filename):
     file = open(filename, 'r')
     exp = int(file.readline().strip('\n'))
     return 2 ** exp
-
-
-def main():
-    read_matrix("ex2_0")
-
-
-if __name__ == "__main__":
-    main()
