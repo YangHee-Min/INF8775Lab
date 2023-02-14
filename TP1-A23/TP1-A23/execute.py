@@ -1,6 +1,6 @@
 from read_matrix import read_matrix
 from conv import conv
-from strassenv2 import strassen, strassen_threshold
+from strassen import strassen, strassen_threshold
 from method import Method
 from time import time
 
@@ -16,7 +16,7 @@ def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
     if method is Method.STRASSEN:
         m_out = strassen(m1, m2)
     if method is Method.STRASSEN_THRESHOLD:
-        m_out = strassen_threshold(m1, m2, 6)
+        m_out = strassen_threshold(m1, m2, 2)
     else:
         m_out = conv(m1, m2)
     timestamp_finish_conv = time()

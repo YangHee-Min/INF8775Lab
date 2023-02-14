@@ -1,23 +1,6 @@
 from conv import conv
+import numpy as np
 
-def subDivide(matrix):
-    n = len(matrix)
-    returnDict = {
-        "1.1": [],
-        "1.2": [],
-        "2.1": [],
-        "2.2": [],
-    }
-
-    for i, row in enumerate(matrix):
-        if i < n/2:
-            returnDict["1.1"].append(row[:(n//2)])
-            returnDict["1.2"].append(row[n//2:])
-        else:
-            returnDict["2.1"].append(row[:(n//2)])
-            returnDict["2.2"].append(row[n//2:])
-
-    return returnDict
 
 def recompose(dictIn):
     c = []
@@ -31,6 +14,7 @@ def recompose(dictIn):
             c[-1].append(elem)
     return c
 
+
 def add(matrixA, matrixB):
     c = []
     for i in range(len(matrixA)):
@@ -39,6 +23,7 @@ def add(matrixA, matrixB):
             row.append(matrixA[i][j] + matrixB[i][j])
         c.append(row)
     return c
+
 
 def substract(matrixA, matrixB):
     c = []
@@ -49,70 +34,78 @@ def substract(matrixA, matrixB):
         c.append(row)
     return c
 
+
 def strassen(matrixA, matrixB):
     if len(matrixA) > 1:
-        subA = subDivide(matrixA)
-        subB = subDivide(matrixB)
+        midpoint = len(matrixA) // 2
+        subA1_1 = np.array(matrixA)[:midpoint, :midpoint]
+        subA1_2 = np.array(matrixA)[:midpoint, midpoint:]
+        subA2_1 = np.array(matrixA)[midpoint:, :midpoint]
+        subA2_2 = np.array(matrixA)[midpoint:, midpoint:]
 
-        m1 = strassen(add(subA["1.1"], subA["2.2"]),
-                      add(subB["1.1"], subB["2.2"]))
-        m2 = strassen(add(subA["2.1"], subA["2.2"]), subB["1.1"])
-        m3 = strassen(subA["1.1"], substract(subB["1.2"], subB["2.2"]))
-        m4 = strassen(subA["2.2"], substract(subB["2.1"], subB["1.1"]))
-        m5 = strassen(add(subA["1.1"], subA["1.2"]), subB["2.2"])
-        m6 = strassen(substract(subA["2.1"], subA["1.1"]),
-                      add(subB["1.1"], subB["1.2"]))
-        m7 = strassen(substract(subA["1.2"], subA["2.2"]),
-                      add(subB["2.1"], subB["2.2"]))
+        subB1_1 = np.array(matrixB)[:midpoint, :midpoint]
+        subB1_2 = np.array(matrixB)[:midpoint, midpoint:]
+        subB2_1 = np.array(matrixB)[midpoint:, :midpoint]
+        subB2_2 = np.array(matrixB)[midpoint:, midpoint:]
 
-        c1 = add(substract(add(m1, m4), m5), m7)
-        c2 = add(m3, m5)
-        c3 = add(m2, m4)
-        c4 = add(add(substract(m1, m2), m3), m6)
+        m1 = strassen(add(subA1_1, subA2_2),
+                      add(subB1_1, subB2_2))
+        m2 = strassen(add(subA2_1, subA2_2), subB1_1)
+        m3 = strassen(subA1_1, substract(subB1_2, subB2_2))
+        m4 = strassen(subA2_2, substract(subB2_1, subB1_1))
+        m5 = strassen(add(subA1_1, subA1_2), subB2_2)
+        m6 = strassen(substract(subA2_1, subA1_1),
+                      add(subB1_1, subB1_2))
+        m7 = strassen(substract(subA1_2, subA2_2),
+                      add(subB2_1, subB2_2))
 
-        returnDict = {
-            "1.1": c1,
-            "1.2": c2,
-            "2.1": c3,
-            "2.2": c4,
-        }
+        c1_1 = add(substract(add(m1, m4), m5), m7)
+        c1_2 = add(m3, m5)
+        c2_1 = add(m2, m4)
+        c2_2 = add(add(substract(m1, m2), m3), m6)
 
-        return recompose(returnDict)
+        c = np.vstack((np.hstack((c1_1, c1_2)), np.hstack((c2_1, c2_2))))
+
+        return c
     else:
         return [[matrixA[0][0] * matrixB[0][0]]]
 
+
 def strassen_threshold(matrixA, matrixB, threshold):
     if len(matrixA) > threshold:
-        subA = subDivide(matrixA)
-        subB = subDivide(matrixB)
+        midpoint = len(matrixA) // 2
+        subA1_1 = np.array(matrixA)[:midpoint, :midpoint]
+        subA1_2 = np.array(matrixA)[:midpoint, midpoint:]
+        subA2_1 = np.array(matrixA)[midpoint:, :midpoint]
+        subA2_2 = np.array(matrixA)[midpoint:, midpoint:]
 
-        m1 = strassen_threshold(add(subA["1.1"], subA["2.2"]),
-                                add(subB["1.1"], subB["2.2"]), threshold)
+        subB1_1 = np.array(matrixB)[:midpoint, :midpoint]
+        subB1_2 = np.array(matrixB)[:midpoint, midpoint:]
+        subB2_1 = np.array(matrixB)[midpoint:, :midpoint]
+        subB2_2 = np.array(matrixB)[midpoint:, midpoint:]
+
+        m1 = strassen_threshold(add(subA1_1, subA2_2),
+                                add(subB1_1, subB2_2), threshold)
         m2 = strassen_threshold(
-            add(subA["2.1"], subA["2.2"]), subB["1.1"], threshold)
-        m3 = strassen_threshold(subA["1.1"], substract(
-            subB["1.2"], subB["2.2"]), threshold)
-        m4 = strassen_threshold(subA["2.2"], substract(
-            subB["2.1"], subB["1.1"]), threshold)
+            add(subA2_1, subA2_2), subB1_1, threshold)
+        m3 = strassen_threshold(subA1_1, substract(
+            subB1_2, subB2_2), threshold)
+        m4 = strassen_threshold(subA2_2, substract(
+            subB2_1, subB1_1), threshold)
         m5 = strassen_threshold(
-            add(subA["1.1"], subA["1.2"]), subB["2.2"], threshold)
-        m6 = strassen_threshold(substract(subA["2.1"], subA["1.1"]),
-                                add(subB["1.1"], subB["1.2"]), threshold)
-        m7 = strassen_threshold(substract(subA["1.2"], subA["2.2"]),
-                                add(subB["2.1"], subB["2.2"]), threshold)
+            add(subA1_1, subA1_2), subB2_2, threshold)
+        m6 = strassen_threshold(substract(subA2_1, subA1_1),
+                                add(subB1_1, subB1_2), threshold)
+        m7 = strassen_threshold(substract(subA1_2, subA2_2),
+                                add(subB2_1, subB2_2), threshold)
 
-        c1 = add(substract(add(m1, m4), m5), m7)
-        c2 = add(m3, m5)
-        c3 = add(m2, m4)
-        c4 = add(add(substract(m1, m2), m3), m6)
+        c1_1 = add(substract(add(m1, m4), m5), m7)
+        c1_2 = add(m3, m5)
+        c2_1 = add(m2, m4)
+        c2_2 = add(add(substract(m1, m2), m3), m6)
 
-        returnDict = {
-            "1.1": c1,
-            "1.2": c2,
-            "2.1": c3,
-            "2.2": c4,
-        }
+        c = np.vstack((np.hstack((c1_1, c1_2)), np.hstack((c2_1, c2_2))))
 
-        return recompose(returnDict)
+        return c
     else:
         return conv(matrixA, matrixB)
