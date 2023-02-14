@@ -11,35 +11,36 @@ methods = {
 }
 
 
-def test_puissance(x, y, method: str):
-    log_x = np.log2(x)
-    log_y = np.log2(y)
+def test_puissance(dataset):
+    fig, axs = plt.subplots(3)
+    fig.suptitle("Test de puissance")
+    
+    for i in range(3):
+        data = dataset[i]
+        axs[i].plot(np.log2(data[0]), np.log2(data[1]), linewidth=2.0)
+        axs[i].set_title(f"Methode {methods[i]}")
+        #axs[i].xlabel('taille (log2)')
+        #axs[i].ylabel('temps (log10)')
 
-    plt.plot(log_x, log_y, linewidth=2.0)
-    plt.title(f"Test Puissance algo {methods[method]}")
-    plt.xlabel('taille (log)')
-    plt.ylabel('temps (log)')
     plt.show()
+    return 
 
 
 if __name__ == "__main__":
-    list_exemplaire = {
-        ("ex2_0", "ex2_1"),
-        ("ex3_0", "ex3_1"),
-        ("ex4_0", "ex4_1"),
-        ("ex5_0", "ex5_1"),
-        ("ex6_1", "ex6_2"),
-    }
+    data_set = {}
+    list_exemplaire = []
+    for i in range(2, 9):
+        list_exemplaire.append((f"ex{i}_0", f"ex{i}_1"))
     for method in range(3):
         list_times = []
         list_size = []
         i = 2
-        for (ex1, ex2) in list_exemplaire:
+        for j in range(len(list_exemplaire)):
+            ex1, ex2 = list_exemplaire[j]
             print(ex1, ex2)
             time_execute = execute(ex1, ex2, method)
             list_times.append(time_execute)
             list_size.append(2**i)
             i += 1
-        test_puissance(list_size, list_times, method)
-        print("x:  ", list_size)
-        print("y:  ", list_times)
+        data_set[method] = (list_size, list_times)
+    test_puissance(data_set)
