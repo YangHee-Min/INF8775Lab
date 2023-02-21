@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import itertools
 
 from execute import execute
 
@@ -16,6 +15,8 @@ def test_puissance(dataset):
     fig, axs = plt.subplots(3)
     fig.suptitle("Test de puissance")
 
+    slopes = []
+    exponentials = []
     for i in range(3):
         data = dataset[i]
         (x, y) = (np.log2(data[0]), np.log2(data[1]))
@@ -30,8 +31,29 @@ def test_puissance(dataset):
         axs[i].scatter(x, y, color='blue')
         axs[i].plot(x, predict(x, m, b), color='red',  linewidth=2.0)
         axs[i].set_title(f"Methode {methods[i]}")
+        slopes.append(2**b)
+        exponentials.append(m)
+    plt.show()
+    plt.savefig('puissance.png')
+    return (slopes, exponentials)
+
+
+def test_rapport(dataset, slopes, exponents):
+    fig, axs = plt.subplots(3)
+    fig.suptitle("Test de rapport")
+
+    for i in range(3):
+        data = dataset[i]
+        x, y = data[0], data[1]
+        f_x = [(slopes[i] * (x_ele ** exponents[i])) for x_ele in x]
+
+        y_over_f_x = [y[j]/f_x[j] for j in range(len(y))]
+
+        axs[i].plot(x, y_over_f_x, color='red',  linewidth=2.0)
+        axs[i].set_title(f"Methode {methods[i]}")
 
     plt.show()
+    plt.savefig('rapport.png')
     return
 
 
@@ -40,16 +62,16 @@ if __name__ == "__main__":
     list_exemplaire = []
 
     MIN_MATRIX_SIZE = 3
-    NUM_SIZE = 7
+    NUM_SIZE = 4
     MAX_MATRIX_SIZE = MIN_MATRIX_SIZE + NUM_SIZE - 1
-    EXAMPLE_COUNT = 5
+    EXAMPLE_COUNT = 8
 
     for method in range(3):
         print(methods[method])
         data_set[method] = []
         list_size = []
         list_times = []
-        for size in range(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE):
+        for size in range(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE + 1):
             print(f"\tSize: {size}")
             sub_array = []
             for i in range(EXAMPLE_COUNT):
@@ -61,4 +83,6 @@ if __name__ == "__main__":
             list_times.append((sum(sub_array)/len(sub_array)))
         data_set[method] = (list_size, list_times)
 
-    test_puissance(data_set)
+    slopes, exponents = [], []
+    (slopes, exponents) = test_puissance(data_set)
+    test_rapport(data_set, slopes, exponents)
