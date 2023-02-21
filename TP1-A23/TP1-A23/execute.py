@@ -2,7 +2,7 @@ from read_matrix import read_matrix
 from conv import conv
 from strassen import strassen, strassen_threshold
 from method import Method
-from time import time
+from time import time_ns as time
 
 
 def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
