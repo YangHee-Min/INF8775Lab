@@ -33,8 +33,8 @@ def test_puissance(dataset):
         axs[i].set_title(f"Methode {methods[i]}")
         slopes.append(2**b)
         exponentials.append(m)
-    plt.show()
     plt.savefig('puissance.png')
+    plt.show()
     return (slopes, exponentials)
 
 
@@ -45,15 +45,15 @@ def test_rapport(dataset, slopes, exponents):
     for i in range(3):
         data = dataset[i]
         x, y = data[0], data[1]
-        f_x = [(slopes[i] * (x_ele ** exponents[i])) for x_ele in x]
+        f_x = [(x_ele ** exponents[i]) for x_ele in x]
 
         y_over_f_x = [y[j]/f_x[j] for j in range(len(y))]
 
         axs[i].plot(x, y_over_f_x, color='red',  linewidth=2.0)
         axs[i].set_title(f"Methode {methods[i]}")
 
-    plt.show()
     plt.savefig('rapport.png')
+    plt.show()
     return
 
 
@@ -62,9 +62,9 @@ if __name__ == "__main__":
     list_exemplaire = []
 
     MIN_MATRIX_SIZE = 3
-    NUM_SIZE = 4
+    NUM_SIZE = 3
     MAX_MATRIX_SIZE = MIN_MATRIX_SIZE + NUM_SIZE - 1
-    EXAMPLE_COUNT = 8
+    EXAMPLE_COUNT = 5
 
     for method in range(3):
         print(methods[method])
@@ -86,3 +86,6 @@ if __name__ == "__main__":
     slopes, exponents = [], []
     (slopes, exponents) = test_puissance(data_set)
     test_rapport(data_set, slopes, exponents)
+
+    for index, dataset in enumerate(data_set):
+        np.savetxt(f"{methods[index]}.csv", data_set[index], delimiter=",")

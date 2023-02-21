@@ -3,6 +3,7 @@ from conv import conv
 from strassen import strassen, strassen_threshold
 from method import Method
 from time import time_ns as time
+# from time import time
 
 
 def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
@@ -10,7 +11,7 @@ def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
     m1 = read_matrix(ex1)
     m2 = read_matrix(ex2)
     timestamp2 = time()
-    (loading_time_ms) = (timestamp2 - timestamp1) // 1_000_000
+    loading_time_ms = (timestamp2 - timestamp1) // 1_000_000
 
     if method is Method.STRASSEN:
         timestamp_start_conv = time()
@@ -32,7 +33,7 @@ def execute(ex1, ex2, method=Method.CONV, is_print=False, is_time=False):
         print("Total loading time: %sms" % loading_time_ms)
         print("Total execution time: %sms" % execution_time_ms)
 
-    return execution_time_ms
+    return timestamp_finish_conv - timestamp_start_conv
 
 
 if __name__ == "__main__":
