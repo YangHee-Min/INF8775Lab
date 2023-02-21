@@ -32,10 +32,15 @@ def test_puissance(x_values, y_values, i):
     def predict(x, m, b):
         return m*x + b
     
-    plt.scatter(x, y, color=limit_colors[i], label=f"Valeurs de la Methode {methods[i]}")
-    plt.plot(x, predict(x, m, b), color=colors[i],  linewidth=1.0, label=f"Methode {methods[i]}")
+    fig = plt.figure()
+    fig.suptitle(f"Test de puissance de la methode {methods[i]}")
+    plt.ylabel('Temps (Log)')
+    plt.xlabel('Taille (Log)')
+    
+    plt.scatter(x, y, color=limit_colors[i], label=f"Valeurs obtenues")
+    plt.plot(x, predict(x, m, b), color=colors[i],  linewidth=1.0, label=f"Modèle estimé")
     plt.legend()
-    plt.savefig(f"puissance_{methods[i]}.png")
+    fig.savefig(f"puissance_{methods[i]}.png")
     plt.clf()     
 
 def test_rapport(x_values, y_values, i):
@@ -47,28 +52,30 @@ def test_rapport(x_values, y_values, i):
     
     limite_a = [c_values[i] for j in range(len(x_values))]
     
-    plt.plot(x_values[1:], limite_a[1:], color=limit_colors[i], label=f"Valeurs Limite de la Methode {methods[i]}")
-    plt.plot(x_values[1:], y[1:], color=colors[i],  linewidth=1.0, label=f"Methode {methods[i]}")
+    fig = plt.figure()
+    fig.suptitle(f"Test de rapport de la methode {methods[i]}")
+    plt.ylabel('Temps')
+    plt.xlabel('Taille')
+    # plt.plot(x_values[1:], limite_a[1:], color=limit_colors[i], label=f"Valeurs Limite de la Methode {methods[i]}")
+    plt.plot(x_values[1:], y[1:], color=colors[i],  linewidth=1.0, label=f"Modèle estimé")
     plt.legend()
-    plt.savefig(f"rapport_{methods[i]}.png")
+    fig.savefig(f"rapport_{methods[i]}.png")
     plt.clf()
     
 def test_constante(x_values, y_values, i):
-    def predict(x, m):
-        return (x**m)
-    
     x =np.power(x_values, m_values[i])
-    
-    # Trouver B
-    b = 0 
-    
+
     def function(x, c):
-        return c*x + b
+        return c*x
     
-    plt.scatter(x, y_values, color=limit_colors[i], label=f"Valeurs des pairs de la Methode {methods[i]}")
-    plt.plot(x, function(x, c_values[i]), color=colors[i],  linewidth=1.0, label=f"Methode {methods[i]}")
+    fig = plt.figure()
+    fig.suptitle(f"Test de constante de la methode {methods[i]}")
+    plt.ylabel('Temps')
+    plt.xlabel('Taille')
+    plt.scatter(x, y_values, color=limit_colors[i], label=f"Valeurs obtenues")
+    plt.plot(x, function(x, c_values[i]), color=colors[i],  linewidth=1.0, label=f"Modèle estimé")
     plt.legend()
-    plt.savefig(f"constante_{methods[i]}.png")
+    fig.savefig(f"constante_{methods[i]}.png")
     plt.clf()
 
 if __name__ == "__main__":
