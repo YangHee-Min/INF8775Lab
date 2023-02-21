@@ -72,7 +72,7 @@ def strassen(matrixA, matrixB):
 
 
 def strassen_threshold(matrixA, matrixB, threshold):
-    if len(matrixA) > threshold:
+    if len(matrixA) > 2 ** threshold:
         midpoint = len(matrixA) // 2
         subA1_1 = np.array(matrixA)[:midpoint, :midpoint]
         subA1_2 = np.array(matrixA)[:midpoint, midpoint:]
