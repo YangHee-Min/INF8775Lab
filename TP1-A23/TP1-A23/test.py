@@ -23,6 +23,8 @@ def test_puissance(x_values, y_values, i):
             (np.mean(x) ** 2 - np.mean(x ** 2)) 
     b = np.mean(y) - m * np.mean(x)
     
+    # m = float(math.floor(m))
+    
     m_values.append(m)
     b_values.append(b)
     c_values.append(2**b)
@@ -55,12 +57,13 @@ def test_constante(x_values, y_values, i):
     def predict(x, m):
         return (x**m)
     
-    x = predict(x_values, m_values[i])
+    x =np.power(x_values, m_values[i])
     
-    # b = np.mean(y_values) - m_values[i] * np.mean(x)
+    # Trouver B
+    b = 0 
     
     def function(x, c):
-        return c*x
+        return c*x + b
     
     plt.scatter(x, y_values, color=limit_colors[i], label=f"Valeurs des pairs de la Methode {methods[i]}")
     plt.plot(x, function(x, c_values[i]), color=colors[i],  linewidth=1.0, label=f"Methode {methods[i]}")
