@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools
 
 from execute import execute
 
@@ -14,33 +15,50 @@ methods = {
 def test_puissance(dataset):
     fig, axs = plt.subplots(3)
     fig.suptitle("Test de puissance")
-    
+
     for i in range(3):
         data = dataset[i]
-        axs[i].plot(np.log2(data[0]), np.log2(data[1]), linewidth=2.0)
+        (x, y) = (np.log2(data[0]), np.log2(data[1]))
+
+        # Calculate the slope and y-intercept of the regression line
+        m = (np.mean(x) * np.mean(y) - np.mean(x * y)) / \
+            (np.mean(x) ** 2 - np.mean(x ** 2))
+        b = np.mean(y) - m * np.mean(x)
+
+        def predict(x, m, b):
+            return m * x + b
+        axs[i].scatter(x, y, color='blue')
+        axs[i].plot(x, predict(x, m, b), color='red',  linewidth=2.0)
         axs[i].set_title(f"Methode {methods[i]}")
-        #axs[i].xlabel('taille (log2)')
-        #axs[i].ylabel('temps (log10)')
 
     plt.show()
-    return 
+    return
 
 
 if __name__ == "__main__":
     data_set = {}
     list_exemplaire = []
-    for i in range(2, 9):
-        list_exemplaire.append((f"ex{i}_0", f"ex{i}_1"))
+
+    MIN_MATRIX_SIZE = 3
+    NUM_SIZE = 7
+    MAX_MATRIX_SIZE = MIN_MATRIX_SIZE + NUM_SIZE - 1
+    EXAMPLE_COUNT = 5
+
     for method in range(3):
-        list_times = []
+        print(methods[method])
+        data_set[method] = []
         list_size = []
-        i = 2
-        for j in range(len(list_exemplaire)):
-            ex1, ex2 = list_exemplaire[j]
-            print(ex1, ex2)
-            time_execute = execute(ex1, ex2, method)
-            list_times.append(time_execute)
-            list_size.append(2**i)
-            i += 1
+        list_times = []
+        for size in range(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE):
+            print(f"\tSize: {size}")
+            sub_array = []
+            for i in range(EXAMPLE_COUNT):
+                for j in range(EXAMPLE_COUNT):
+                    print(f"\t\tex{size}_{i}, ex{size}_{j}")
+                    ex1, ex2 = (f"ex{size}_{i}", f"ex{size}_{j}")
+                    time_execute = sub_array.append(execute(ex1, ex2, method))
+            list_size.append(2**size)
+            list_times.append((sum(sub_array)/len(sub_array)))
         data_set[method] = (list_size, list_times)
+
     test_puissance(data_set)
