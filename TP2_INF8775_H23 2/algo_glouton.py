@@ -1,4 +1,3 @@
-import random
 import math
 import queue
 
@@ -13,7 +12,7 @@ def shortest_distance(point, coords):
 
 
 def TSP(coords):
-    starting_point = coords.pop(random.randint(0, len(coords)))
+    starting_point = coords.pop(0)
     path = [starting_point]
     
     # while there is still coords not evaluated 

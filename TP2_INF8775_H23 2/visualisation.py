@@ -1,6 +1,8 @@
 import sys
 from PIL import Image, ImageDraw
-from algo_glouton import TSP
+from algo_glouton import TSP as TSP_GLOUTON
+from graphe import TSP as TSP_MST
+from algo_dynamique import TSP as TSP_DYN
 
 def get_coords(file_name):  
     f = open(file_name, "r")
@@ -36,4 +38,9 @@ if __name__ == "__main__":
     file_name = "N1000_"
     for i in range(5):
         file= file_name + str(i)
-        draw_points(TSP(get_coords(file)), file)
+        draw_points(TSP_GLOUTON(get_coords(file)), file+"_GLOUTON")
+    file_name = "N50_"
+    for j in range(5):
+        file= file_name + str(j)
+        draw_points(TSP_MST(get_coords(file)), file+"_TSP")
+        # draw_points(TSP_DYN(get_coords(file)), file+"_DYNAMIQUE")
