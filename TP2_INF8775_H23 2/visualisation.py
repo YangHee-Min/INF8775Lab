@@ -35,12 +35,15 @@ def draw_points(path, filename):
     img.save(f"{filename}.png")
     
 if __name__ == "__main__":
-    file_name = "N1000_"
+    file_name = "N15_"
     for i in range(5):
         file= file_name + str(i)
         draw_points(TSP_GLOUTON(get_coords(file)), file+"_GLOUTON")
-    file_name = "N50_"
+    file_name = "N15_"
     for j in range(5):
         file= file_name + str(j)
         draw_points(TSP_MST(get_coords(file)), file+"_TSP")
-        # draw_points(TSP_DYN(get_coords(file)), file+"_DYNAMIQUE")
+    file_name = "N15_"
+    for k in range(1):
+        file= file_name + str(j)
+        draw_points(TSP_DYN(get_coords(file)), file+"_DYNAMIQUE")
