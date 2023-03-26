@@ -18,7 +18,7 @@
 #     $ ./inst_gen.py [-h] -s NB_VILLES [-n NB_EXEMPLAIRES] [-x PRÉFIXE]
 #
 #     où :
-#       * NB_BATIMENTS est la taille du problème et 
+#       * NB_BATIMENTS est la taille du problème et
 #       * NB_EXEMPLAIRES est le nombre d'exemplaires différents requis (par défaut 1).
 #
 #     Il est nécessaire de rendre ce script exécutable en utilisant chmod +x
@@ -31,14 +31,14 @@ import argparse
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--taille", \
-                        help="Représente la taille du graphe à générer", \
+    parser.add_argument("-s", "--taille",
+                        help="Représente la taille du graphe à générer",
                         action='store', required=True, metavar='NB_BATIMENTS', type=int)
-    parser.add_argument("-n", "--nb-exemplaires", \
-                        help="Représente le nombre d'exemplaires d'une même taille à générer", \
+    parser.add_argument("-n", "--nb-exemplaires",
+                        help="Représente le nombre d'exemplaires d'une même taille à générer",
                         action='store', required=False, metavar='NB_EXEMPLAIRES', type=int)
-    parser.add_argument("-x", "--prefixe", \
-                        help="Ajouter le préfixe indiqué aux noms des fichiers", \
+    parser.add_argument("-x", "--prefixe",
+                        help="Ajouter le préfixe indiqué aux noms des fichiers",
                         action='store', required=False, metavar='PREFIXE', type=str)
 
     args = parser.parse_args()
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         # Preallocate
         res = [2 * [0] for _ in range(args.taille)]
-        
+
         # Generate points
         for i in range(args.taille):
             res[i][0] = random.randint(0, max_coord)
@@ -71,8 +71,18 @@ if __name__ == "__main__":
             pdict[res[i][0]][res[i][1]] = True
 
         # Write
-        with open(args.prefixe + 'N' + str(args.taille) + '_' + str(file_n),'w') as inst:
+        with open(args.prefixe + 'N' + str(args.taille) + '_' + str(file_n), 'w') as inst:
             inst.write("%d\n" % args.taille)
 
             for i in range(args.taille):
                 inst.write("%d  %d\n" % (res[i][0], res[i][1]))
+
+        with open(args.prefixe + 'TN' + str(args.taille) + '_' + str(file_n), 'w') as inst:
+            inst.write("%d\n" % args.taille)
+            index_string = "1"
+            for i in range(1, args.taille):
+                index_string += f' {i + 1}'
+
+            inst.write(f'{index_string}\n')
+            for i in range(args.taille):
+                inst.write("%d,%d\n" % (res[i][0], res[i][1]))
