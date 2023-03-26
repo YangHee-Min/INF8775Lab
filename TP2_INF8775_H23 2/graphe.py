@@ -3,6 +3,7 @@ import math
 def TSP(coords):
     mst = build_MST(coords)
     path = evaluate_node(list(mst.keys())[0], mst, [])
+    path.append(path[0])
     return path
 
 def evaluate_node(child, tree, path):

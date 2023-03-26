@@ -20,6 +20,7 @@ def TSP(coords):
         # find shortest point
         starting_point = coords.pop(shortest_distance(starting_point, coords))
         path.append(starting_point)
-
+    
+    path.append(path[0])
     return path
     
