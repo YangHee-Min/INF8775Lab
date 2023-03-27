@@ -66,17 +66,23 @@ def MST(coords):
         if graph.allNodesLinked():
             firstNode = coords[0]
             returnPath = graph.visitNode(firstNode, [])
-            return returnPath.append(returnPath[0])
+            returnPath.append(returnPath[0])
+            return returnPath
 
 if __name__ == "__main__":
-    f = open("N50_0", "r")
+    f = open("N5_0", "r")
     coords = []
     N = int(f.readline())
     print(f"N : {N} ")
+    
 
     for i in range(N):
         line = f.readline()
         coords.append(tuple(int(coord) for coord in line.split("  ")))
     
+    for i in coords:
+        for j in coords :
+            if i != j :                
+                print(i,j, " : ", math.dist(i, j))
     path = TSP(coords)
-    print(len(path))
+    print(path)
