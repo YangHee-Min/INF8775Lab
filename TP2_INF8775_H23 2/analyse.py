@@ -2,7 +2,7 @@
 from graphe import TSP as TSP_MST
 from algo_dynamique import TSP as TSP_DYN
 from visualisation import get_coords, get_cost_path
-from time import process_time_ns as time
+from time import process_time_ms as time
 import pandas as pd
 
 
