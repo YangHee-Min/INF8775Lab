@@ -5,8 +5,8 @@ while getopts ":a:e:pt" opt; do
   case $opt in
     a) algo="$OPTARG";;
     e) path="$OPTARG";;
-    p) is_print=false;;
-    t) is_time=false;;
+    p) print="-p";;
+    t) time="-t";;
     \?) echo "Option invalide: -$OPTARG" >&2;;
   esac
 done
@@ -17,4 +17,4 @@ if [ -z "$algo" ] || [ -z "$path" ]; then
   exit 1
 fi
 
-python argparser.py -a "$algo" -e1 "$path" $is_print $is_time
+python argparser.py -a "$algo" -e "$path" $print $time

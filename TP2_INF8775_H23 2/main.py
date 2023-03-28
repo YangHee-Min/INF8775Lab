@@ -1,7 +1,7 @@
 from algo_glouton import TSP as TSP_GLOUTON
 from algo_mst import TSP as TSP_MST
 from algo_dynamique import TSP as TSP_DYN
-import time
+from time import process_time_ns as time
 
 
 def print_path(coords, path):
@@ -20,7 +20,7 @@ def get_path(method, coords):
         path = TSP_MST(coords)
 
     if coords_copy.index(path[1]) > coords_copy.index(path[-2]):
-        path = path.reverse()
+        path.reverse()
 
     return path
 
@@ -39,12 +39,12 @@ def execute(filepath, method, is_time, is_print):
     coords = load_coords(filepath)
     copy_coords = coords.copy()
     if is_time:
-        startTime = time.time()
+        startTime = time() / 1000000
 
     path = get_path(method, coords)
 
     if is_time:
-        print(time.time()-startTime)
+        print((time()/ 1000000)-startTime)
 
     if is_print:
         print_path(copy_coords, path)
