@@ -3,23 +3,6 @@ from itertools import chain, combinations
 import math
 import time
 from visualisation import get_coords, get_cost_path
-from time import process_time_ns as time
-import pandas as pd
-
-
-def create_spreadsheet(size_list, execution_time_list, cost_list, file_name_no_extension):
-    # Create a DataFrame with the data
-    data = {'Size': size_list,
-            'Execution Time': execution_time_list, 'Cost': cost_list}
-    df = pd.DataFrame(data)
-
-    # Create a new Excel file and write the DataFrame to a worksheet
-    with pd.ExcelWriter(f'{file_name_no_extension}.xlsx') as writer:
-        df.to_excel(writer, index=False)
-
-# run a bunch of files to get their execution times and put them in an excel
-
-# https://stackoverflow.com/questions/1482308/how-to-get-all-subsets-of-a-set-powerset
 
 
 def generatePowerset(s):
@@ -64,7 +47,6 @@ def difference(listA, listB):
 
 def TSP(coords):
     dynamic_array = {}
-    path = []
 
     starting_point = coords.pop(0)
     N = len(coords)
@@ -150,37 +132,3 @@ def TSP(coords):
         returnPath.append(starting_point)
         returnPath.reverse()
         return returnPath
-
-
-def execution_time_dyn(filename):
-    start_time = time()
-    coords = get_coords(filename)
-    optimal_path = TSP(coords)
-    end_time = time()
-    execution_time = end_time - start_time
-    cost = get_cost_path(optimal_path)
-    return execution_time, cost
-
-
-def run_dyn():
-    prefix = "./examples/N"
-    sizes = [10, 14]
-    example_count = 5
-    times, costs = [], []
-    for count in sizes:
-        average_time = 0
-        average_cost = 0
-        for i in range(example_count):
-            file = f'{prefix}{count}_{i}'
-            time, cost = execution_time_dyn(file)
-            average_time += time
-            average_cost += cost
-        average_time /= example_count
-        average_cost /= example_count
-        times.append(average_time)
-        costs.append(average_cost)
-    create_spreadsheet(sizes, times, costs, "dyn")
-
-
-if __name__ == "__main__":
-    run_dyn()
