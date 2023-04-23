@@ -30,7 +30,7 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
             print(
                 f'overwriting {table[row][col]} with {enclosure_id}')
 
-        table[row][col] = current_size
+        table[row][col] = enclosure_id
         current_size += 1
         if current_size == max_size:
             return table
@@ -39,15 +39,11 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
         possible_new_coords = get_possible_next_coords(table, row, col)
         # randomly choose one of these
         while len(possible_new_coords) < 1:
-            # center table in a bigger table if we're trying to go to a border
             if row == 0 or row == len(table) - 1 or col == 0 or col == len(table[0]) - 1:
-                # print("double size")
                 table, row, col = center_new_table(table, row, col)
                 possible_new_coords = get_possible_next_coords(table, row, col)
             # choose a random point amongst the points of our already existing points to continue off of in hopes it is an edge
             else:
-                # print("stuck")
-                # print_table(table)
                 border_points = get_border(table, enclosure_id)
                 row, col = border_points[random.randint(
                     0, len(border_points) - 1)]
@@ -55,11 +51,6 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
 
         new_coords_index = 0 if len(possible_new_coords) == 1 else random.randint(
             0, len(possible_new_coords) - 1)
-        # if get_manhattan_distance((row, col), possible_new_coords[new_coords_index]) > 1:
-        # print('\033[93m' + "AAAAAAAAAAAAAAH" + '\033[0m')
-        # print_table(table)
-        # print(
-        # f'current: ({row}, {col}) {possible_new_coords} index:{new_coords_index}')
         row, col = possible_new_coords[new_coords_index]
     return table
 
@@ -94,17 +85,12 @@ def get_possible_next_coords(table, row, col):
             direction, row, col, len(table[0]), len(table))
         if is_cell_free(table, next_coords[0], next_coords[1]):
             possible_new_coords.append(next_coords)
-        # print(f'current: ({row}, {col}) {possible_new_coords}')
     return possible_new_coords
 
 
 def center_new_table(table, row, col):
-    # print(f'old:{row}, {col}')
-    # print_table(table)
     new_row, new_col = get_centered_coordinates(table, row, col)
-    # print(f'new:{new_row}, {new_col}')
     table = center_table_and_double_size(table)
-    # print_table(table)
     return (table, new_row, new_col)
 
 
@@ -181,7 +167,33 @@ def print_table(table):
         print(row_string.rstrip())
 
 
+def numIslands(grid):
+    def dfs(row, col):
+        if row < 0 or col < 0 or row >= len(grid) or col >= len(grid[0]) or grid[row][col] != 0:
+            return
+        grid[row][col] = None
+        dfs(row-1, col)
+        dfs(row+1, col)
+        dfs(row, col-1)
+        dfs(row, col+1)
+
+    if not grid or not grid[0]:
+        return 0
+
+    num_islands = 0
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col] == 0:
+                dfs(row, col)
+                num_islands += 1
+
+    return num_islands
+
+
 if __name__ == "__main__":
-    table = generate_enclosures()
-    print("FINAL TABLE")
-    print_table(table)
+    for i in range(10000):
+        table = generate_enclosures()
+        numislands = numIslands(table)
+        if (numislands > 1):
+            raise Exception("ERROR!")
+        print(f'table {i} complete. Num islands:{numislands}')
