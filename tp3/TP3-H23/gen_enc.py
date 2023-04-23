@@ -25,8 +25,8 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
     start_coords = (start_row, start_column)
     enclosure_coords = []
 
+    (row, col) = start_coords
     while current_size < max_size:
-        (row, col) = start_coords
         if table[row][col] != None:
             print(
                 f'overwriting {table[row][col]} with {enclosure_id}')
@@ -39,18 +39,23 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
         # Find which directions are free then decide which one to go to randomly
         possible_new_coords = get_possible_next_coords(table, row, col)
         # randomly choose one of these
-        if len(possible_new_coords) < 1:
+        while len(possible_new_coords) < 1:
             # center table in a bigger table if we're trying to go to a border
-            table = center_table_and_double_size(table)
-            row, col = get_centered_coordinates(table, row, col)
-            possible_new_coords = get_possible_next_coords(table, row, col)
-            # if we're just stuck choose a different random point
+            if row == 0 or row == len(table) - 1 or col == 0 or col == len(table[0]) - 1:
+                table, row, col = center_new_table(table, row, col)
+                possible_new_coords = get_possible_next_coords(table, row, col)
+            # choose a random point amongst the points of our already existing points to continue off of in hopes it is an edge
+            # TODO: replace with function to find edges of
+            else:
+                row, col = enclosure_coords[random.randint(
+                    0, len(enclosure_coords))]
+                possible_new_coords = get_possible_next_coords(
+                    table, row, col)
 
-        if len(possible_new_coords) == 1:
-            new_coords_index = 0
-        else:
-            new_coords_index = random.randint(0, len(possible_new_coords) - 1)
+        new_coords_index = 0 if len(possible_new_coords) == 1 else random.randint(
+            0, len(possible_new_coords) - 1)
         row, col = possible_new_coords[new_coords_index]
+        enclosure_coords.append((row, col))
     return table
 
 
@@ -63,9 +68,13 @@ def get_possible_next_coords(table, row, col):
     return possible_new_coords
 
 
+def center_new_table(table, row, col):
+    row, col = get_centered_coordinates(table, row, col)
+    table = center_table_and_double_size(table)
+    return (table, row, col)
+
+
 def center_table_and_double_size(table):
-    print("OLD TABLE")
-    print_table(table)
     rows = len(table)
     cols = len(table[0])
     new_rows = rows * 2
@@ -79,9 +88,9 @@ def center_table_and_double_size(table):
     for i in range(rows):
         for j in range(cols):
             centered_table[start_row + i][start_col + j] = table[i][j]
-    print("NEW TABLE")
-    print_table(centered_table)
     return centered_table
+
+# Must always call before center_table_and_double_size
 
 
 def get_centered_coordinates(table, original_row_index, original_col_index):
@@ -139,4 +148,6 @@ def print_table(table):
 
 
 if __name__ == "__main__":
-    print_table(generate_enclosures())
+    table = generate_enclosures()
+    print("FINAL TABLE")
+    print_table(table)
