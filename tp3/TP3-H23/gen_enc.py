@@ -91,7 +91,6 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
                 if old_coords == possible_new_coords:
                     raise Exception(
                         "Stuck in circled area that will always be too small. Aborting")
-            # TODO: say we haven't reached max_size yet but we're surrounded by another area, find a way to circumvent
 
         new_coords_index = 0 if len(possible_new_coords) == 1 else random.randint(
             0, len(possible_new_coords) - 1)
