@@ -21,24 +21,6 @@ class Direction(Enum):
     DOWN = 4
 
 
-# TODO: DELETE THIS AFTER
-def isAdjacentToFilled(table, row, col):
-    for direction in Direction:
-        next_row, next_col = get_next_cell_coords(
-            direction, row, col, len(table[0]), len(table))
-        if next_row >= 0 and next_col >= 0 and next_row < len(table) and next_col < len(table[0]) and table[next_row][next_col] != None:
-            return True
-    return False
-
-
-def isTableEmpty(table):
-    for i in range(len(table)):
-        for j in range(len(table[0])):
-            if table[i][j] != None:
-                return False
-    return True
-
-
 def generate_enclosures(id_to_size_map: Dict[int, int]):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
     row, col = get_center_coord(len(table[0]), len(table))
