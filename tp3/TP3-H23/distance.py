@@ -61,6 +61,8 @@ def findAllShortestPath(graph, nouveauContour, n):
             
             if ((valeur not in distances.keys()) and (valeur is not couleurInit) and (valeur is not None)):
                 distances[valeur] = distance
+                if len(distances.keys())==n-1:
+                    return distances
             
             voisins = getVoisins(noeud[0], noeud[1], len(graph[0]), len(graph))
             for voisin in voisins:
@@ -68,9 +70,7 @@ def findAllShortestPath(graph, nouveauContour, n):
                     nouveauContour.append(voisin)
             
             noeudVisiter.append(noeud)
-        if len(distances.keys())==n-1:
-            return distances
-    print("im fucked")
+        distance +=1
 """
 TROUVER LES CONTOURS DES ENCLOS
 
@@ -141,7 +141,11 @@ def findAllDistances(graph, n):
         shortestPaths = findAllShortestPath(graph, contours, n)
         allDistances[i] = shortestPaths
         
-    print(allDistances)
+    for i in allDistances.keys():
+        print(i, "  : ", allDistances[i])
+        print("\n******************")
+    
+    return allDistances
         
     
 if __name__ == '__main__':

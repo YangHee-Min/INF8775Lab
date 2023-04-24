@@ -13,13 +13,21 @@ GRAPH = [[4, None, None, None, 1, 1, 1],
 
 class TestStringMethods(unittest.TestCase):
     
+    def __init__(self, methodName: str = "runTest"):
+        super().__init__(methodName)
+        filename =  "/Users/charles-antoinelaurin/depot_distant/H23/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
+        (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(filename)
+        table = generate_enclosures(id_to_size)
+        self.graph = table
+        self.n = enc_count
+    
     def test_find_voisin(self):
-        voisins = getVoisins(6, 0, len(GRAPH[0]), len(GRAPH))
+        voisins = getVoisins(6, 0, len(self.graph[0]), len(self.graph))
         print(voisins)
         
 
     def test_find_contours(self):
-        contours = findContours(GRAPH, (3, 3))
+        contours = findContours(self.graph, (3, 3))
         contours.sort()
         print(contours)
     
@@ -48,27 +56,34 @@ class TestStringMethods(unittest.TestCase):
             print_table(debugMatrix)  
     """
         
-    def containsI(self, graph, i):
-        for line in graph:
+    def containsI(self, i):
+        for line in self.graph:
                 if i in line:
                     return True
         return False
     
     def test_generate(self):
-        filename =  "/Users/charles-antoinelaurin/depot_distant/H23/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
-        (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(filename)
-        table = generate_enclosures(id_to_size)
-        
-        print_table(table)
-        
-        for i in range(enc_count):
-            result = self.containsI(table, i)
+        for i in range(self.n):
+            result = self.containsI(i)
             self.assertTrue(result, "Tous les enclos sont sur le board")
-                        
+       
+    """                 
+    def test_findAll(self):
+        allDistances = findAllDistances(self.graph, self.n)
         
+        print(allDistances)
+        
+        for i in range(self.n):
+            for j in range(self.n):
+                if i!=j: 
+                    print(allDistances[i][j],",  ", allDistances[j][i])
+                    self.assertEqual(allDistances[i][j], allDistances[j][i])
+                # print(i, "  ", j)
+    """
+       
         
     def test_find_enclos(self):
-        enclos = findEnclos(GRAPH, 2)
+        enclos = findEnclos(self.graph, 2)
         print(enclos)
         
     
