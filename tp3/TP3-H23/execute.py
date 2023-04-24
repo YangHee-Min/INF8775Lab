@@ -1,6 +1,7 @@
 from gen_enc import generate_enclosures
 from gen_enc import print_table
-from typing import List
+from read_values import read_file
+from typing import List, Dict
 import heapq
 
 
@@ -22,25 +23,28 @@ def execute(filepath: str, is_print: bool):
         i += 1
     """
     POPULATION_COUNT = 10
-    population_set = gen_population(filepath, POPULATION_COUNT)
+    (enc_count, m_set_count, min_dist, id_size_map, weights) = read_file(filepath)
+    # TODO: use m_set_count and min_dist in fitness function and if not respected score should be very low
+    # TODO: Also use weights to determine how valuable an enclosure is
+    population_set = gen_population(id_size_map, POPULATION_COUNT)
     iteration = 0
-    while not is_stop_criteria_met():
+    while not is_stop_criteria_met(iteration, population_set[len(population_set) - 1]):
         elite_set = select_elite(population_set)
         crossover_set = gen_crossover_set()
         mutation_set = gen_mutation_set()
 
         population_set = select_next_generation(
             elite_set, crossover_set, mutation_set, POPULATION_COUNT)
-        i += 1
+        iteration += 1
 
     if is_print:
         print_table(population_set[len(population_set) - 1])
 
 
-def gen_population(filepath, population_count) -> list:
+def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
     initial_set = []
     while len(initial_set) < population_count:
-        new_map = generate_enclosures(filepath)
+        new_map = generate_enclosures(id_to_size_map)
         new_fitness_score = get_fitness_score(new_map)
         # note that heappush puts our highest scores to the end of the priority queue
         heapq.heappush(initial_set, (new_fitness_score, new_map))
