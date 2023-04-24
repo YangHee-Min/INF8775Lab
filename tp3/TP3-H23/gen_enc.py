@@ -1,10 +1,11 @@
+from read_values import read_file
 from typing import Union
 from enum import Enum
 import random
 from typing import Dict
 
-TABLE_WIDTH = 5
-TABLE_HEIGHT = 5
+TABLE_WIDTH = 10
+TABLE_HEIGHT = 10
 
 
 class Direction(Enum):
@@ -234,13 +235,17 @@ def numIslands(grid):
 
 
 if __name__ == "__main__":
-    map = {
-        1: 25,
-        2: 5,
-        3: 2,
-    }
-    table = generate_enclosures(map)
+    (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
+    table = generate_enclosures(id_to_size)
     print_table(table)
-    numislands = numIslands(table)
-    if (numislands > 1):
-        raise Exception("ERROR!")
+    # map = {
+    #     1: 25,
+    #     2: 5,
+    #     3: 2,
+    # }
+    # table = generate_enclosures(map)
+    # print_table(table)
+    # numislands = numIslands(table)
+    # if (numislands > 1):
+    #     raise Exception("ERROR!")
