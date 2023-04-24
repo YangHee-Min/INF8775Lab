@@ -126,7 +126,7 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
                 possible_new_coords = get_possible_next_coords(table, row, col)
             # choose a random point amongst the points of our already existing points to continue off of in hopes it is an edge
             else:
-                border_points = get_border(table, enclosure_id)
+                border_points = get_edges_with_value(table, enclosure_id)
                 rand_index = random.randint(
                     0, len(border_points) - 1)
                 ref_row, ref_col = border_points[rand_index]
@@ -165,9 +165,9 @@ def get_edges(table):
     return edge_nodes
 
 
-def get_border(table, value):
+def get_edges_with_value(table, value):
     rows, cols = len(table), len(table[0])
-    border = []
+    edges = []
 
     # Check each element and its neighbors
     for i in range(rows):
@@ -175,13 +175,13 @@ def get_border(table, value):
             if table[i][j] == value:
                 if i == 0 or i == rows-1 or j == 0 or j == cols-1:
                     # Element is on the edge of the array
-                    border.append((i, j))
+                    edges.append((i, j))
                 else:
                     # Check if any neighbors are not the target value
-                    if table[i-1][j] != value or table[i+1][j] != value or table[i][j-1] != value or table[i][j+1] != value:
-                        border.append((i, j))
+                    if table[i-1][j] is not value or table[i+1][j] is not value or table[i][j-1] is not value or table[i][j+1] is not value:
+                        edges.append((i, j))
 
-    return border
+    return edges
 
 
 def get_possible_next_coords(table, row, col):
@@ -268,7 +268,8 @@ def print_table(table):
     for row in table:
         row_string = ''
         for i, cell in enumerate(row):
-            row_string += '{:<{}}'.format(str(cell), column_widths[i] + 1)
+            value = '-' if cell is None else str(cell)
+            row_string += '{:<{}}'.format(value, column_widths[i] + 1)
         print(row_string.rstrip())
     print()
 
@@ -301,6 +302,7 @@ if __name__ == "__main__":
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(1000):
         table = generate_enclosures(id_to_size)
+        print_table(table)
         print(f'completed {i}')
     # print_table(table)
     # for i in range(1000):
