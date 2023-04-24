@@ -27,10 +27,11 @@ def execute(filepath: str, is_print: bool):
     # TODO: use m_set_count and min_dist in fitness function and if not respected score should be very low
     # TODO: Also use weights to determine how valuable an enclosure is
     population_set = gen_population(id_size_map, POPULATION_COUNT)
+    maximum_score = m_set_count ** 2
     iteration = 0
-    while not is_stop_criteria_met(iteration, population_set[len(population_set) - 1]):
+    while not is_stop_criteria_met(iteration, population_set[0], maximum_score):
         elite_set = select_elite(population_set)
-        crossover_set = gen_crossover_set()
+        crossover_set = gen_crossover_set(elite_set)
         mutation_set = gen_mutation_set()
 
         population_set = select_next_generation(
@@ -51,15 +52,15 @@ def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
     return initial_set
 
 
-def is_stop_criteria_met(current_iteration: int, enclosure_map) -> bool:
+def is_stop_criteria_met(current_iteration: int, enclosure_map, threshold) -> bool:
     # max iteration
     MAX_ITERATION_COUNT = 5
     if current_iteration >= MAX_ITERATION_COUNT:
         return True
 
     # TODO: need to change based on the actual input matrix given
-    SOLUTION_FOUND_FITNESS_THRESHOLD = 300
-    if get_fitness_score(enclosure_map) > SOLUTION_FOUND_FITNESS_THRESHOLD:
+
+    if get_fitness_score(enclosure_map) >= threshold:
         return True
 
     return False
@@ -68,8 +69,8 @@ def is_stop_criteria_met(current_iteration: int, enclosure_map) -> bool:
 def select_elite(sorted_maps: list) -> list:
     CUTOFF_PERCENTAGE = 0.3
     total_length = len(sorted_maps)
-    first_element_index = total_length - (total_length * CUTOFF_PERCENTAGE)
-    return sorted_maps[first_element_index:len(sorted_maps)]
+    cutoff_index = round(total_length * CUTOFF_PERCENTAGE)
+    return sorted_maps[0:cutoff_index]
 
 
 def get_fitness_score(enclosure_map: set):
