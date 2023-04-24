@@ -8,6 +8,12 @@ TABLE_WIDTH = 5
 TABLE_HEIGHT = 5
 
 
+class StuckException(Exception):
+    def __init__(self, message="Stuck in circled area that will always be too small. Aborting"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class Direction(Enum):
     LEFT = 1
     UP = 2
@@ -26,38 +32,50 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
             try:
                 table = generate_enclosure(
                     start_row=row, start_column=col, enclosure_id=id, max_size=id_to_size_map[id], table=table)
-            except Exception as e:
-                print(e)
-                print_table(table)
+            except StuckException:
+                # if not enough space: clear and reset table
                 remove_value(table, id)
-                if len(possible_next_id_start) > 0:
-                    for i in range(len(possible_next_id_start)):
-                        row, col = possible_next_id_start[i]
-                        possible_next_id_start[i] = get_centered_coordinates(
-                            table, row, col)
+                if isFilledOverCapacity(table, id_to_size_map[id]):
+                    print_table(table)
                     table = center_table_and_double_size(table)
-
+                    row, col = get_center_coord(len(table[0]), len(table))
+                    continue
+                # goes into this if case if we get stuck
+                if len(possible_next_id_start) > 0:
                     (row, col) = possible_next_id_start[random.randint(
                         0, len(possible_next_id_start) - 1)]
-                else:
-                    table = center_table_and_double_size(table)
+                    continue
+                continue
 
-            print_table(table)
             border_points = get_border_covered(table)
+            if len(border_points) < 1:
+                table = center_table_and_double_size(table)
+                continue
             next_coords_list = []
             for point in border_points:
                 next_coords = get_possible_next_coords(
                     table, point[0], point[1])
                 if len(next_coords) > 0:
                     next_coords_list.extend(next_coords)
+            if len(next_coords_list) < 1:
+                table = center_table_and_double_size(table)
+                continue
             index = random.randint(
                 0, len(next_coords_list) - 1)
             (row, col) = next_coords_list[index]
-            print_table(table)
             possible_next_id_start = next_coords_list
             enclosureIsSet = True
 
     return table
+
+
+def isFilledOverCapacity(table, id_size):
+    count = 0
+    for i in range(len(table)):
+        for j in range(len(table[0])):
+            if table[i][j] != None:
+                count += 1
+    return ((len(table) * len(table[0])) - count) / id_size < 2
 
 
 def get_center_coord(table_width, table_height):
@@ -82,8 +100,7 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
     (row, col) = start_coords
     while current_size < max_size:
         if table[row][col] != None:
-            print(
-                f'overwriting {table[row][col]} with {enclosure_id}')
+            print(f'overwriting {table[row][col]} with {enclosure_id}')
 
         table[row][col] = enclosure_id
         current_size += 1
@@ -96,18 +113,19 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
         # randomly choose one of these
         while len(possible_new_coords) < 1:
             if row == 0 or row == len(table) - 1 or col == 0 or col == len(table[0]) - 1:
-                table, row, col = center_new_table(table, row, col)
+                table, ref_row, ref_col = center_new_table(table, row, col)
                 possible_new_coords = get_possible_next_coords(table, row, col)
             # choose a random point amongst the points of our already existing points to continue off of in hopes it is an edge
             else:
                 border_points = get_border(table, enclosure_id)
-                row, col = border_points[random.randint(
-                    0, len(border_points) - 1)]
+                rand_index = random.randint(
+                    0, len(border_points) - 1)
+                ref_row, ref_col = border_points[rand_index]
                 old_coords = possible_new_coords
-                possible_new_coords = get_possible_next_coords(table, row, col)
+                possible_new_coords = get_possible_next_coords(
+                    table, ref_row, ref_col)
                 if old_coords == possible_new_coords:
-                    raise Exception(
-                        "Stuck in circled area that will always be too small. Aborting")
+                    raise StuckException
 
         new_coords_index = 0 if len(possible_new_coords) == 1 else random.randint(
             0, len(possible_new_coords) - 1)
@@ -174,6 +192,8 @@ def center_new_table(table, row, col):
 
 
 def center_table_and_double_size(table):
+    print("----------------OLD--------------------")
+    print_table(table)
     rows = len(table)
     cols = len(table[0])
     new_rows = rows * 2
@@ -187,6 +207,8 @@ def center_table_and_double_size(table):
     for i in range(rows):
         for j in range(cols):
             centered_table[start_row + i][start_col + j] = table[i][j]
+    print("----------------NEW--------------------")
+    print_table(centered_table)
     return centered_table
 
 # Must always call before center_table_and_double_size
@@ -271,17 +293,19 @@ def numIslands(grid):
 
 
 if __name__ == "__main__":
-    # (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-    #     "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    # table = generate_enclosures(id_to_size)
-    # print_table(table)
-    map = {
-        1: 25,
-        2: 5,
-        3: 2,
-    }
-    table = generate_enclosures(map)
+    (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
+    table = generate_enclosures(id_to_size)
     print_table(table)
-    numislands = numIslands(table)
-    if (numislands > 1):
-        raise Exception("ERROR!")
+    # for i in range(1000):
+    #     map = {
+    #         1: 25,
+    #         2: 5,
+    #         3: 2,
+    #     }
+    #     table = generate_enclosures(map)
+    #     print("----------------FINAL-------------------")
+    #     print_table(table)
+    #     numislands = numIslands(table)
+    #     if (numislands > 1):
+    #         raise Exception("ERROR!")
