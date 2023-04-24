@@ -191,9 +191,8 @@ def numIslands(grid):
 
 
 if __name__ == "__main__":
-    for i in range(10000):
-        table = generate_enclosures()
-        numislands = numIslands(table)
-        if (numislands > 1):
-            raise Exception("ERROR!")
-        print(f'table {i} complete. Num islands:{numislands}')
+    table = generate_enclosures()
+    print_table(table)
+    numislands = numIslands(table)
+    if (numislands > 1):
+        raise Exception("ERROR!")
