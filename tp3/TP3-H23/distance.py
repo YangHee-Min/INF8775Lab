@@ -1,44 +1,7 @@
-"""
-Fonction compareParHeuristique(n1:Nœud, n2:Nœud)
-       si n1.heuristique < n2.heuristique 
-           retourner 1
-       ou si n1.heuristique == n2.heuristique 
-           retourner 0
-       sinon
-           retourner -1
+import random
+from gen_enc import read_file, generate_enclosures, print_table
 
-Fonction cheminPlusCourt(g:Graphe, objectif:Nœud, depart:Nœud)
-       closedLists = File()
-       openList = FilePrioritaire(comparateur = compareParHeuristique)
-       openList.ajouter(depart)
-       tant que openList n'est pas vide
-           u = openList.defiler() 
-           si u.x == objectif.x et u.y == objectif.y
-               reconstituerChemin(u)
-               terminer le programme
-           pour chaque voisin v de u dans g
-               si non(   v existe dans closedLists 
-                            ou v existe dans openList avec un coût inférieur)
-                    v.cout = u.cout +1 
-                    v.heuristique = v.cout + distance([v.x, v.y], [objectif.x, objectif.y])
-                    openLists.ajouter(v)
-           closedLists.ajouter(u)
-       terminer le programme (avec erreur)
-"""
-
-"""
-IDEES D'ANALYSE
-    -> ON PREND L'ENCLOS AVEC LA PLUS GRANDE SUPERFICIE
-    -> ON CHERCHE DE MANIERE ALEATOIRE UNE CASE DE CET ENCLOS
-    
-        -> PT ON PREND LE PREMIER ENCLOS QUE L'ON TROUVE??
-    
-    -> ENSUITE ON CHERCHE TOUTES LES DISTANCES AVEC LES ENCLOS 
-    
-    -> EN TROUVANT LES DISTANCES AVEC LES ENCLOS, ON TROUVE AUSSI UN COTE DE L'ENCLOS VOISIN
-"""
-
-def getVoisins(x, y, longeurMax):
+def getVoisins(x, y, longeurMaxX, longeurMaxY):
     returnList = []
     
     x_1 = x-1
@@ -48,11 +11,11 @@ def getVoisins(x, y, longeurMax):
 
     if x_1 >= 0:
         returnList.append((x_1, y))
-    if x_2 < longeurMax:
+    if x_2 < longeurMaxX:
         returnList.append((x_2, y))
     if y_1 >= 0:
         returnList.append((x, y_1))
-    if y_2 < longeurMax:
+    if y_2 < longeurMaxY:
         returnList.append((x, y_2))
     return returnList
 
@@ -82,30 +45,32 @@ Fonction cheminPlusCourt(g:Graphe, contourDepart: [])
 """
 def findAllShortestPath(graph, nouveauContour, n):
     distances = dict()
-    couleurInit = graph[nouveauContour[0][0]][nouveauContour[0][1]]
-    
+    couleurInit = graph[nouveauContour[0][1]][nouveauContour[0][0]]
+
     noeudVisiter = []
     contoursDepart = []
-    
     distance = 0
-    while True:
+    
+    while len(nouveauContour) > 0:
         contoursDepart = nouveauContour
         nouveauContour = []
+        
         while len(contoursDepart)> 0:
             noeud = contoursDepart.pop();
+            valeur = graph[noeud[1]][noeud[0]]
             
-            valeur = graph[noeud[0]][noeud[1]]
             if ((valeur not in distances.keys()) and (valeur is not couleurInit) and (valeur is not None)):
-                distances[valeur]= distance
+                distances[valeur] = distance
             
-            voisins = getVoisins(noeud[0], noeud[1], len(graph))
+            voisins = getVoisins(noeud[0], noeud[1], len(graph[0]), len(graph))
             for voisin in voisins:
-                if not ((voisin in noeudVisiter) or (voisin in nouveauContour) or (graph[voisin[0]][voisin[1]] == couleurInit)):
+                if not ((voisin in noeudVisiter) or (voisin in nouveauContour)):
                     nouveauContour.append(voisin)
-        distance += 1
-
+            
+            noeudVisiter.append(noeud)
         if len(distances.keys())==n-1:
             return distances
+    print("im fucked")
 """
 TROUVER LES CONTOURS DES ENCLOS
 
@@ -130,17 +95,61 @@ def findContours(graph, start):
     contours = []
     noeudAVisiter = [start]
     noeudVisiter = []
-    couleurInitiale = graph[start[0]][start[1]]    
+    couleurInitiale = graph[start[1]][start[0]]   
 
     while len(noeudAVisiter)>0:
         u = noeudAVisiter.pop()
-        voisins = getVoisins(u[1], u[0], len(graph[0]))
+        voisins = getVoisins(u[0], u[1], len(graph[0]), len(graph))
+
         for voisin in voisins: 
-            if ((graph[voisin[0]][voisin[1]] != couleurInitiale) and (u not in contours)):
+            if ((graph[voisin[1]][voisin[0]] != couleurInitiale) and (u not in contours)):
                 contours.append(u)
-            if((graph[voisin[0]][voisin[1]] == couleurInitiale) and (voisin not in noeudVisiter) and (voisin not in noeudAVisiter)):
+            elif ((graph[voisin[1]][voisin[0]] == couleurInitiale) and (voisin not in noeudVisiter) and (voisin not in noeudAVisiter)):
                 noeudAVisiter.append(voisin)
-            elif voisin not in noeudVisiter:
-                noeudVisiter.append(voisin)
+
         noeudVisiter.append(u)
     return contours
+
+
+def findEnclos(graph, index):
+    noeudAVisiter = []
+    noeudVisiter = []
+    
+    noeudInit = (random.randint(0, len(graph)-1), random.randint(0, len(graph[0])-1))
+    
+    noeudAVisiter.append(noeudInit)
+    
+    while len(noeudAVisiter) > 0:
+        u = noeudAVisiter.pop()
+        
+        if graph[u[1]][u[0]] == index:
+            return u
+        
+        voisins = getVoisins(u[1], u[0], len(graph[0]), len(graph))
+        for voisin in voisins: 
+            if ((voisin not in noeudVisiter) or (voisin not in noeudAVisiter)):
+                noeudAVisiter.append(voisin)
+        
+        noeudVisiter.append(u)
+        
+                
+def findAllDistances(graph, n):
+    allDistances = {}
+    for i in range(n):
+        enclos = findEnclos(graph, i)
+        contours = findContours(graph, enclos)
+        shortestPaths = findAllShortestPath(graph, contours, n)
+        allDistances[i] = shortestPaths
+        
+    print(allDistances)
+        
+    
+if __name__ == '__main__':
+    filename =  "/Users/charles-antoinelaurin/depot_distant/H23/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
+    (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(filename)
+    
+    table = generate_enclosures(id_to_size)
+    print_table(table)
+    
+    findAllDistances(table, enc_count)
+    
