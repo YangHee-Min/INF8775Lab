@@ -31,6 +31,7 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
             try:
                 table = generate_enclosure(
                     start_row=row, start_column=col, enclosure_id=id, max_size=id_to_size_map[id], table=table)
+                enclosureIsSet = True
             except StuckException:
                 # if not enough space: clear and reset table
                 remove_value(table, id)
@@ -48,7 +49,6 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
                     table, border_coords_same_id)
                 index = random.randint(0, len(next_coords_list_same_id) - 1)
                 row, col = next_coords_list_same_id[index]
-            enclosureIsSet = True
 
         border_coords = get_edges(table)
         if len(border_coords) < 1:
@@ -275,11 +275,50 @@ def print_table(table):
     print()
 
 
+def count_enclosure(grid):
+    def dfs(i, j):
+        if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]):
+            return
+        if visited[i][j] or grid[i][j] == None:
+            return
+        visited[i][j] = True
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+
+    count = 0
+    visited = [[False]*len(grid[0]) for _ in range(len(grid))]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if not visited[i][j] and grid[i][j] != None:
+                count += 1
+                dfs(i, j)
+    return count
+
+
 def count_all_islands(table, enc_count):
+    less_than_1 = []
+    more_than_1 = []
     for i in range(enc_count):
         count = count_islands(table, i)
         if count > 1:
-            raise Exception(f'Too many islands for enclosure {i}')
+            more_than_1.append(i)
+        if count < 1:
+            less_than_1.append(i)
+
+    more_than_1_str = ""
+
+    less_than_1_str = ""
+    exception = False
+    if len(less_than_1) > 1:
+        less_than_1_str = f'< 1: {less_than_1}\n'
+        exception = True
+    if len(more_than_1) > 1:
+        more_than_1_str = f'< 1: {more_than_1}\n'
+        exception = True
+    if exception:
+        raise Exception(less_than_1_str + more_than_1_str)
 
 
 def count_islands(grid, label):
@@ -309,9 +348,11 @@ if __name__ == "__main__":
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(200):
         table = generate_enclosures(id_to_size)
+        print(f'--------------Completed {i}------------')
         print_table(table)
+        print(f'island count: {count_enclosure(table)}')
+        count_all_islands(table, enc_count)
         # count_all_islands(table, enc_count)
-        print(f'completed {i}')
     # print_table(table)
     # for i in range(1000):
     #     map = {
