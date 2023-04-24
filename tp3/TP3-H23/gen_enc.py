@@ -214,7 +214,8 @@ def get_possible_next_coords(table, row, col):
 
 
 def center_new_table(table, row, col):
-    new_row, new_col = get_centered_coordinates(table, row, col)
+    new_row, new_col = get_centered_coordinates(
+        len(table), len(table[0]), row, col)
     table = center_table_and_double_size(table)
     return (table, new_row, new_col)
 
@@ -238,9 +239,7 @@ def center_table_and_double_size(table):
 # Must always call before center_table_and_double_size
 
 
-def get_centered_coordinates(table, original_row_index, original_col_index):
-    rows = len(table)
-    cols = len(table[0])
+def get_centered_coordinates(rows: int, cols: int, original_row_index: int, original_col_index: int):
     new_rows = rows * 2
     new_cols = cols * 2
 
@@ -318,7 +317,7 @@ def numIslands(grid):
 
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n100_m50_V-8613404.txt")
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n1000_m500_V-8435325196.txt")
     for i in range(1000):
         table = generate_enclosures(id_to_size)
         print(f'completed {i}')
