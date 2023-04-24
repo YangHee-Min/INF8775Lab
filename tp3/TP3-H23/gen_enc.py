@@ -1,6 +1,7 @@
 from typing import Union
 from enum import Enum
 import random
+from typing import Dict
 
 TABLE_WIDTH = 5
 TABLE_HEIGHT = 5
@@ -13,15 +14,52 @@ class Direction(Enum):
     DOWN = 4
 
 
-def generate_enclosures():
+def generate_enclosures(id_to_size_map: Dict[int, int]):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
-    table = generate_enclosure(0, 0, 0, 0, 25, table)
+    row, col = 0, 0
+
+    possible_next_start = []
+    for id in id_to_size_map:
+        enclosureIsSet = False
+        while not enclosureIsSet:
+            try:
+                table = generate_enclosure(
+                    start_row=row, start_column=col, enclosure_id=id, max_size=id_to_size_map[id], table=table)
+                border_points = get_border(table, id)
+
+                for point in border_points:
+                    possible_next_coords = get_possible_next_coords(
+                        table, point[0], point[1])
+                    possible_next_start.extend(possible_next_coords)
+                (row, col) = possible_next_start[random.randint(
+                    0, len(possible_next_start) - 1)]
+                enclosureIsSet = True
+            except:
+                remove_value(table, id)
+                if len(possible_next_start) > 0:
+                    for i in range(len(possible_next_start)):
+                        row, col = possible_next_start[i]
+                        possible_next_start[i] = get_centered_coordinates(
+                            table, row, col)
+                    table = center_table_and_double_size(table)
+
+                    (row, col) = possible_next_start[random.randint(
+                        0, len(possible_next_start) - 1)]
+
     return table
 
 
-def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_size, table):
-    # find a way to keep all of the points and
+def remove_value(table, value):
+    for i in range(len(table)):
+        for j in range(len(table[i])):
+            if table[i][j] == value:
+                table[i][j] = None
+    return table
 
+
+def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
+    # find a way to keep all of the points and
+    current_size = 0
     start_coords = (start_row, start_column)
 
     (row, col) = start_coords
@@ -37,6 +75,7 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
 
         # Find which directions are free then decide which one to go to randomly
         possible_new_coords = get_possible_next_coords(table, row, col)
+        old_coords = []
         # randomly choose one of these
         while len(possible_new_coords) < 1:
             if row == 0 or row == len(table) - 1 or col == 0 or col == len(table[0]) - 1:
@@ -47,7 +86,12 @@ def generate_enclosure(start_row, start_column, enclosure_id, current_size, max_
                 border_points = get_border(table, enclosure_id)
                 row, col = border_points[random.randint(
                     0, len(border_points) - 1)]
+                old_coords = possible_new_coords
                 possible_new_coords = get_possible_next_coords(table, row, col)
+                if old_coords == possible_new_coords:
+                    raise Exception(
+                        "Stuck in circled area that will always be too small. Aborting")
+            # TODO: say we haven't reached max_size yet but we're surrounded by another area, find a way to circumvent
 
         new_coords_index = 0 if len(possible_new_coords) == 1 else random.randint(
             0, len(possible_new_coords) - 1)
@@ -191,7 +235,12 @@ def numIslands(grid):
 
 
 if __name__ == "__main__":
-    table = generate_enclosures()
+    map = {
+        1: 25,
+        2: 5,
+        3: 2,
+    }
+    table = generate_enclosures(map)
     print_table(table)
     numislands = numIslands(table)
     if (numislands > 1):
