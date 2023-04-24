@@ -312,10 +312,10 @@ def count_all_islands(table, enc_count):
 
     less_than_1_str = ""
     exception = False
-    if len(less_than_1) > 1:
+    if len(less_than_1) > 0:
         less_than_1_str = f'< 1: {less_than_1}\n'
         exception = True
-    if len(more_than_1) > 1:
+    if len(more_than_1) > 0:
         more_than_1_str = f'< 1: {more_than_1}\n'
         exception = True
     if exception:
