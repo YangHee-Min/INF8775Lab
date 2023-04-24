@@ -3,6 +3,7 @@ from typing import Union
 from enum import Enum
 import random
 from typing import Dict
+import numpy as np
 
 TABLE_WIDTH = 5
 TABLE_HEIGHT = 5
@@ -343,13 +344,28 @@ def count_islands(grid, label):
     return count
 
 
+def remove_none_rows_cols(arr):
+    # convert arr to a numpy array
+    arr_np = np.array(arr)
+    # get boolean masks for rows and columns that are all None
+    row_mask = np.all(arr_np == None, axis=1)
+    col_mask = np.all(arr_np == None, axis=0)
+    # remove rows and columns that are all None
+    arr_np = arr_np[~row_mask, :]
+    arr_np = arr_np[:, ~col_mask]
+    # convert back to a Python list of lists
+    arr_new = arr_np.tolist()
+    return arr_new
+
+
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    for i in range(200):
+    for i in range(1000):
         table = generate_enclosures(id_to_size)
         print(f'--------------Completed {i}------------')
         print_table(table)
+        print_table(remove_none_rows_cols(table))
         print(f'island count: {count_enclosure(table)}')
         count_all_islands(table, enc_count)
         # count_all_islands(table, enc_count)
