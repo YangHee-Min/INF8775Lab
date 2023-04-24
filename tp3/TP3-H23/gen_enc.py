@@ -39,7 +39,7 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
                 if isFilledOverCapacity(table, id_to_size_map[id]):
                     table = center_table_and_double_size(table)
                 # get none None border
-                border_coords_same_id = get_non_none_border(table)
+                border_coords_same_id = get_edges(table)
                 # if boorder_coords_same_id is Empty it means we have the Empty 2d array. Just center it and go next.
                 if len(border_coords_same_id) < 1:
                     row, col = get_center_coord(len(table[0]), len(table))
@@ -50,7 +50,7 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
                 row, col = next_coords_list_same_id[index]
             enclosureIsSet = True
 
-        border_coords = get_non_none_border(table)
+        border_coords = get_edges(table)
         if len(border_coords) < 1:
             table = center_table_and_double_size(table)
             continue
@@ -118,7 +118,6 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
 
         # Find which directions are free then decide which one to go to randomly
         possible_new_coords = get_possible_next_coords(table, row, col)
-        # TODO: if no possible coords means its stuck. Raise error?
         old_coords = []
         # randomly choose one of these
         while len(possible_new_coords) < 1:
@@ -147,23 +146,23 @@ def get_manhattan_distance(tuple1, tuple2):
     return abs(tuple2[0] - tuple1[0]) + abs(tuple2[1] - tuple1[1])
 
 
-def get_non_none_border(table):
+def get_edges(table):
     rows, cols = len(table), len(table[0])
-    border = []
+    edge_nodes = []
 
     # Check each element and its neighbors
     for i in range(rows):
         for j in range(cols):
-            if table[i][j] != None:
+            if table[i][j] is not None:
                 if i == 0 or i == rows-1 or j == 0 or j == cols-1:
                     # Element is on the edge of the array
-                    border.append((i, j))
+                    edge_nodes.append((i, j))
                 else:
                     # Check if any neighbors are not the target value
-                    if table[i-1][j] != None or table[i+1][j] != None or table[i][j-1] != None or table[i][j+1] != None:
-                        border.append((i, j))
+                    if not (table[i-1][j] is None and table[i+1][j] is None and table[i][j-1] is None and table[i][j+1] is None):
+                        edge_nodes.append((i, j))
 
-    return border
+    return edge_nodes
 
 
 def get_border(table, value):
@@ -299,7 +298,7 @@ def numIslands(grid):
 
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n1000_m500_V-8435325196.txt")
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(1000):
         table = generate_enclosures(id_to_size)
         print(f'completed {i}')
