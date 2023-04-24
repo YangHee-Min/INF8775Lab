@@ -3,6 +3,7 @@ from gen_enc import print_table
 from read_values import read_file
 from typing import List, Dict
 import heapq
+import random
 
 
 def execute(filepath: str, is_print: bool):
@@ -32,14 +33,14 @@ def execute(filepath: str, is_print: bool):
     while not is_stop_criteria_met(iteration, population_set[0], maximum_score):
         elite_set = select_elite(population_set)
         crossover_set = gen_crossover_set(elite_set)
-        mutation_set = gen_mutation_set()
+        mutation_set = gen_mutation_set(elite_set)
 
         population_set = select_next_generation(
             elite_set, crossover_set, mutation_set, POPULATION_COUNT)
         iteration += 1
 
     if is_print:
-        print_table(population_set[len(population_set) - 1])
+        print_table(population_set[len(population_set) - 1][1])
 
 
 def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
@@ -48,7 +49,9 @@ def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
         new_map = generate_enclosures(id_to_size_map)
         new_fitness_score = get_fitness_score(new_map)
         # note that heappush puts our highest scores to the end of the priority queue
-        heapq.heappush(initial_set, (new_fitness_score, new_map))
+        initial_set.append((new_fitness_score, new_map))
+    initial_set = heapq.nlargest(
+        len(initial_set), initial_set, key=heap_comparison_func)
     return initial_set
 
 
@@ -66,25 +69,25 @@ def is_stop_criteria_met(current_iteration: int, enclosure_map, threshold) -> bo
     return False
 
 
-def select_elite(sorted_maps: list) -> list:
+def select_elite(sorted_heap: list) -> list:
     CUTOFF_PERCENTAGE = 0.3
-    total_length = len(sorted_maps)
-    cutoff_index = round(total_length * CUTOFF_PERCENTAGE)
-    return sorted_maps[0:cutoff_index]
+    total_length = len(sorted_heap)
+    cutoff_count = int(round(total_length * CUTOFF_PERCENTAGE))
+    return heapq.nlargest(cutoff_count, sorted_heap, key=heap_comparison_func)
 
 
 def get_fitness_score(enclosure_map: set):
-    return 100
+    return random.randint(-100, 100)
 
 
 def gen_crossover_set(prioritized_maps) -> list:
-    crossover_set = []
+    crossover_set = prioritized_maps
     # TODO: do crossover between parents
     return crossover_set
 
 
 def gen_mutation_set(prioritized_maps) -> List:
-    mutated_set = []
+    mutated_set = prioritized_maps
     # TODO: do mutation
     return mutated_set
 
@@ -92,10 +95,15 @@ def gen_mutation_set(prioritized_maps) -> List:
 def select_next_generation(elite_set, crossover_set, mutation_set, POPULATION_COUNT) -> list:
     next_generation = []
     for score_map in (elite_set + crossover_set + mutation_set):
-        heapq.heappush(next_generation, score_map)
-    first_index = len(next_generation) - \
-        POPULATION_COUNT if len(next_generation) - POPULATION_COUNT > 0 else 0
-    return next_generation[first_index:len(next_generation)]
+        next_generation.append(score_map)
+    new_generation_count = POPULATION_COUNT if POPULATION_COUNT < len(
+        next_generation) else len(next_generation)
+    return heapq.nlargest(new_generation_count, next_generation, key=heap_comparison_func)
+
+
+def heap_comparison_func(elem):
+    score, list = elem
+    return score
 
 
 if __name__ == "__main__":
