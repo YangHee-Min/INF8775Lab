@@ -4,7 +4,6 @@ from enum import Enum
 import random
 from typing import Dict
 import numpy as np
-import time
 
 TABLE_WIDTH = 5
 TABLE_HEIGHT = 5
@@ -63,7 +62,7 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
         index = random.randint(
             0, len(next_coords_list) - 1)
         (row, col) = next_coords_list[index]
-    table = remove_none_rows_cols(table)
+
     return table
 
 
@@ -189,12 +188,11 @@ def get_edges_with_value(table, value):
 
 def get_possible_next_coords(table, row, col):
     possible_new_coords = []
-    nrows, ncols = table.shape
     for direction in Direction:
-        next_row, next_col = get_next_cell_coords(
-            direction, row, col, ncols, nrows)
-        if is_cell_free(table, next_row, next_col):
-            possible_new_coords.append((next_row, next_col))
+        next_coords = get_next_cell_coords(
+            direction, row, col, len(table[0]), len(table))
+        if is_cell_free(table, next_coords[0], next_coords[1]):
+            possible_new_coords.append(next_coords)
     return possible_new_coords
 
 
@@ -206,18 +204,19 @@ def center_new_table(table, row, col):
 
 
 def center_table_and_double_size(table):
-    rows, cols = table.shape
+    rows = len(table)
+    cols = len(table[0])
     new_rows = rows * 2
     new_cols = cols * 2
 
-    centered_table = np.full((new_rows, new_cols), None)
+    centered_table = [[None for j in range(new_cols)] for i in range(new_rows)]
 
     start_row = new_rows // 2 - rows // 2
     start_col = new_cols // 2 - cols // 2
 
-    centered_table[start_row:start_row + rows,
-                   start_col:start_col + cols] = table
-
+    for i in range(rows):
+        for j in range(cols):
+            centered_table[start_row + i][start_col + j] = table[i][j]
     return centered_table
 
 # Must always call before center_table_and_double_size
@@ -237,8 +236,7 @@ def get_centered_coordinates(rows: int, cols: int, original_row_index: int, orig
 
 
 def is_cell_free(table, row: int, col: int):
-    nrows, ncols = table.shape
-    if row < 0 or col < 0 or row > nrows - 1 or col > ncols - 1 or table[row, col] is not None:
+    if row < 0 or col < 0 or row > len(table) - 1 or col > len(table[0]) - 1 or table[row][col] != None:
         return False
     return True
 
@@ -260,28 +258,13 @@ def generate_random_direction():
 
 
 def generate_field(width, height):
-    return np.full((height, width), None)
+    return [[None for j in range(width)] for i in range(height)]
 
 
 def print_table(table):
     # Determine the maximum length of each column
     column_widths = [max(len(str(row[i])) for row in table)
                      for i in range(len(table[0]))]
-
-    # Print each row with aligned columns
-    for row in table:
-        row_string = ''
-        for i, cell in enumerate(row):
-            value = '-' if cell is None else str(cell)
-            row_string += '{:<{}}'.format(value, column_widths[i] + 1)
-        print(row_string.rstrip())
-    print()
-
-
-def print_numpy_table(table):
-    # Determine the maximum length of each column
-    column_widths = [max(len(str(cell)) for cell in table[:, i])
-                     for i in range(table.shape[1])]
 
     # Print each row with aligned columns
     for row in table:
@@ -377,16 +360,14 @@ def remove_none_rows_cols(arr):
 
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n1000_m500_V-8435325196.txt")
-    for i in range(5):
-        start_time = time.time()
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
+    for i in range(1000):
         table = generate_enclosures(id_to_size)
-        end_time = time.time()
-        print(
-            f'--------------Completed {i} in {end_time - start_time:.6f} seconds------------')
-        # print_table(table)
-        # print(f'island count: {count_enclosure(table)}')
-        # count_all_islands(table, enc_count)
+        print(f'--------------Completed {i}------------')
+        print_table(table)
+        print_table(remove_none_rows_cols(table))
+        print(f'island count: {count_enclosure(table)}')
+        count_all_islands(table, enc_count)
         # count_all_islands(table, enc_count)
     # print_table(table)
     # for i in range(1000):
