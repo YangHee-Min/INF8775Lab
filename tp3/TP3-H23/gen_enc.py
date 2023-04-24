@@ -4,8 +4,8 @@ from enum import Enum
 import random
 from typing import Dict
 
-TABLE_WIDTH = 10
-TABLE_HEIGHT = 10
+TABLE_WIDTH = 5
+TABLE_HEIGHT = 5
 
 
 class Direction(Enum):
@@ -17,37 +17,53 @@ class Direction(Enum):
 
 def generate_enclosures(id_to_size_map: Dict[int, int]):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
-    row, col = 0, 0
+    row, col = get_center_coord(len(table[0]), len(table))
 
-    possible_next_start = []
+    possible_next_id_start = []
     for id in id_to_size_map:
         enclosureIsSet = False
         while not enclosureIsSet:
             try:
                 table = generate_enclosure(
                     start_row=row, start_column=col, enclosure_id=id, max_size=id_to_size_map[id], table=table)
-                border_points = get_border(table, id)
-
-                for point in border_points:
-                    possible_next_coords = get_possible_next_coords(
-                        table, point[0], point[1])
-                    possible_next_start.extend(possible_next_coords)
-                (row, col) = possible_next_start[random.randint(
-                    0, len(possible_next_start) - 1)]
-                enclosureIsSet = True
-            except:
+            except Exception as e:
+                print(e)
+                print_table(table)
                 remove_value(table, id)
-                if len(possible_next_start) > 0:
-                    for i in range(len(possible_next_start)):
-                        row, col = possible_next_start[i]
-                        possible_next_start[i] = get_centered_coordinates(
+                if len(possible_next_id_start) > 0:
+                    for i in range(len(possible_next_id_start)):
+                        row, col = possible_next_id_start[i]
+                        possible_next_id_start[i] = get_centered_coordinates(
                             table, row, col)
                     table = center_table_and_double_size(table)
 
-                    (row, col) = possible_next_start[random.randint(
-                        0, len(possible_next_start) - 1)]
+                    (row, col) = possible_next_id_start[random.randint(
+                        0, len(possible_next_id_start) - 1)]
+                else:
+                    table = center_table_and_double_size(table)
+
+            print_table(table)
+            border_points = get_border_covered(table)
+            next_coords_list = []
+            for point in border_points:
+                next_coords = get_possible_next_coords(
+                    table, point[0], point[1])
+                if len(next_coords) > 0:
+                    next_coords_list.extend(next_coords)
+            index = random.randint(
+                0, len(next_coords_list) - 1)
+            (row, col) = next_coords_list[index]
+            print_table(table)
+            possible_next_id_start = next_coords_list
+            enclosureIsSet = True
 
     return table
+
+
+def get_center_coord(table_width, table_height):
+    center_x = table_width // 2
+    center_y = table_height // 2
+    return (center_x, center_y)
 
 
 def remove_value(table, value):
@@ -101,6 +117,25 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
 
 def get_manhattan_distance(tuple1, tuple2):
     return abs(tuple2[0] - tuple1[0]) + abs(tuple2[1] - tuple1[1])
+
+
+def get_border_covered(table):
+    rows, cols = len(table), len(table[0])
+    border = []
+
+    # Check each element and its neighbors
+    for i in range(rows):
+        for j in range(cols):
+            if table[i][j] != None:
+                if i == 0 or i == rows-1 or j == 0 or j == cols-1:
+                    # Element is on the edge of the array
+                    border.append((i, j))
+                else:
+                    # Check if any neighbors are not the target value
+                    if table[i-1][j] != None or table[i+1][j] != None or table[i][j-1] != None or table[i][j+1] != None:
+                        border.append((i, j))
+
+    return border
 
 
 def get_border(table, value):
@@ -209,6 +244,7 @@ def print_table(table):
         for i, cell in enumerate(row):
             row_string += '{:<{}}'.format(str(cell), column_widths[i] + 1)
         print(row_string.rstrip())
+    print()
 
 
 def numIslands(grid):
@@ -235,17 +271,17 @@ def numIslands(grid):
 
 
 if __name__ == "__main__":
-    (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    table = generate_enclosures(id_to_size)
-    print_table(table)
-    # map = {
-    #     1: 25,
-    #     2: 5,
-    #     3: 2,
-    # }
-    # table = generate_enclosures(map)
+    # (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
+    #     "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
+    # table = generate_enclosures(id_to_size)
     # print_table(table)
-    # numislands = numIslands(table)
-    # if (numislands > 1):
-    #     raise Exception("ERROR!")
+    map = {
+        1: 25,
+        2: 5,
+        3: 2,
+    }
+    table = generate_enclosures(map)
+    print_table(table)
+    numislands = numIslands(table)
+    if (numislands > 1):
+        raise Exception("ERROR!")
