@@ -62,6 +62,17 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
             0, len(next_coords_list) - 1)
         (row, col) = next_coords_list[index]
 
+        # print(f'iteration {id} with next row, col: {row, col}')
+        # print_table(table)
+        # for i in range(id):
+        #     island_count = count_islands(table, i)
+        #     print(f'island count: {island_count} for id {id}')
+        #     if (island_count > 1):
+        #         print("EXCEPTION HERE")
+        #         print_table(table)
+        #         raise Exception(
+        #             f'stopped for island {i} during enclos {id} generation')
+
     return table
 
 
@@ -112,18 +123,33 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
             raise Exception(f'overwriting {row}x{col} with id {enclosure_id}')
 
         table[row][col] = enclosure_id
+        print(f'iteration {enclosure_id} with next row, col: {row, col}')
+        print_table(table)
+        for i in range(enclosure_id + 1):
+            island_count = count_islands(table, i)
+            print(f'island count: {island_count} for id {i}')
+            if (island_count > 1):
+                print("EXCEPTION HERE")
+                print_table(table)
+                raise Exception(
+                    f'stopped for island {i} during enclos {enclosure_id} generation')
         current_size += 1
         if current_size == max_size:
             return table
 
         # Find which directions are free then decide which one to go to randomly
         possible_new_coords = get_possible_next_coords(table, row, col)
+        # print(f'possible new coords: {possible_new_coords}')
         old_coords = []
         # randomly choose one of these
         while len(possible_new_coords) < 1:
             if row == 0 or row == len(table) - 1 or col == 0 or col == len(table[0]) - 1:
                 table, ref_row, ref_col = center_new_table(table, row, col)
-                possible_new_coords = get_possible_next_coords(table, row, col)
+                print("NEW CENTERED AND DOUBLED TABLE")
+                print_table(table)
+                possible_new_coords = get_possible_next_coords(
+                    table, ref_row, ref_col)
+                print(f'new coords {possible_new_coords}')
             # choose a random point amongst the points of our already existing points to continue off of in hopes it is an edge
             else:
                 border_points = get_edges_with_value(table, enclosure_id)
@@ -274,35 +300,41 @@ def print_table(table):
     print()
 
 
-def numIslands(grid):
-    def dfs(row, col):
-        if row < 0 or col < 0 or row >= len(grid) or col >= len(grid[0]) or grid[row][col] != 0:
+def count_all_islands(table, enc_count):
+    for i in range(enc_count):
+        count = count_islands(table, i)
+        if count > 1:
+            raise Exception(f'Too many islands for enclosure {i}')
+
+
+def count_islands(grid, label):
+    def dfs(i, j):
+        if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]):
             return
-        grid[row][col] = None
-        dfs(row-1, col)
-        dfs(row+1, col)
-        dfs(row, col-1)
-        dfs(row, col+1)
+        if visited[i][j] or grid[i][j] != label:
+            return
+        visited[i][j] = True
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
 
-    if not grid or not grid[0]:
-        return 0
-
-    num_islands = 0
-    for row in range(len(grid)):
-        for col in range(len(grid[0])):
-            if grid[row][col] == 0:
-                dfs(row, col)
-                num_islands += 1
-
-    return num_islands
+    count = 0
+    visited = [[False]*len(grid[0]) for _ in range(len(grid))]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if not visited[i][j] and grid[i][j] == label:
+                count += 1
+                dfs(i, j)
+    return count
 
 
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    for i in range(1000):
+    for i in range(200):
         table = generate_enclosures(id_to_size)
-        print_table(table)
+        # count_all_islands(table, enc_count)
         print(f'completed {i}')
     # print_table(table)
     # for i in range(1000):
