@@ -23,7 +23,7 @@ def execute(filepath: str, is_print: bool):
         P_next_gen = selection(P_i U P_c U Pm |P_i| f) # keep this size of P_i
         i += 1
     """
-    POPULATION_COUNT = 10
+    POPULATION_COUNT = 100
     (enc_count, m_set_count, min_dist, id_size_map, weights) = read_file(filepath)
     # TODO: use m_set_count and min_dist in fitness function and if not respected score should be very low
     # TODO: Also use weights to determine how valuable an enclosure is
@@ -32,8 +32,10 @@ def execute(filepath: str, is_print: bool):
     iteration = 0
     while not is_stop_criteria_met(iteration, population_set[0], maximum_score):
         elite_set = select_elite(population_set)
-        crossover_set = gen_crossover_set(elite_set)
-        mutation_set = gen_mutation_set(elite_set)
+        crossover_set = gen_crossover_set(
+            elite_set, (POPULATION_COUNT - len(elite_set)) // 2)
+        mutation_set = gen_mutation_set(
+            elite_set, POPULATION_COUNT - len(elite_set) - len(crossover_set))
 
         population_set = select_next_generation(
             elite_set, crossover_set, mutation_set, POPULATION_COUNT)
@@ -80,13 +82,13 @@ def get_fitness_score(enclosure_map: set):
     return random.randint(-100, 100)
 
 
-def gen_crossover_set(prioritized_maps) -> list:
+def gen_crossover_set(prioritized_maps, children_count) -> list:
     crossover_set = prioritized_maps
     # TODO: do crossover between parents
     return crossover_set
 
 
-def gen_mutation_set(prioritized_maps) -> List:
+def gen_mutation_set(prioritized_maps, mutated_count) -> List:
     mutated_set = prioritized_maps
     # TODO: do mutation
     return mutated_set
