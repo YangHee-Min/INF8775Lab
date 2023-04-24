@@ -108,8 +108,8 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
         if table[row][col] != None:
             print("OLD:")
             print_table(table)
-            print(f'overwriting {row}x{col} with id {enclosure_id}')
             print(possible_new_coords)
+            raise Exception(f'overwriting {row}x{col} with id {enclosure_id}')
 
         table[row][col] = enclosure_id
         current_size += 1
