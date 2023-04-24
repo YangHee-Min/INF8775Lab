@@ -21,11 +21,28 @@ class Direction(Enum):
     DOWN = 4
 
 
+# TODO: DELETE THIS AFTER
+def isAdjacentToFilled(table, row, col):
+    for direction in Direction:
+        next_row, next_col = get_next_cell_coords(
+            direction, row, col, len(table[0]), len(table))
+        if next_row >= 0 and next_col >= 0 and next_row < len(table) and next_col < len(table[0]) and table[next_row][next_col] != None:
+            return True
+    return False
+
+
+def isTableEmpty(table):
+    for i in range(len(table)):
+        for j in range(len(table[0])):
+            if table[i][j] != None:
+                return False
+    return True
+
+
 def generate_enclosures(id_to_size_map: Dict[int, int]):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
     row, col = get_center_coord(len(table[0]), len(table))
 
-    possible_next_id_start = []
     for id in id_to_size_map:
         enclosureIsSet = False
         while not enclosureIsSet:
@@ -35,38 +52,45 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
             except StuckException:
                 # if not enough space: clear and reset table
                 remove_value(table, id)
+                # check border values
+                # if filled too much then double in size
                 if isFilledOverCapacity(table, id_to_size_map[id]):
-                    print_table(table)
                     table = center_table_and_double_size(table)
+                # get none None border
+                border_coords_same_id = get_non_none_border(table)
+                # if boorder_coords_same_id is Empty it means we have the Empty 2d array. Just center it and go next.
+                if len(border_coords_same_id) < 1:
                     row, col = get_center_coord(len(table[0]), len(table))
                     continue
-                # goes into this if case if we get stuck
-                if len(possible_next_id_start) > 0:
-                    (row, col) = possible_next_id_start[random.randint(
-                        0, len(possible_next_id_start) - 1)]
-                    continue
-                continue
-
-            border_points = get_border_covered(table)
-            if len(border_points) < 1:
-                table = center_table_and_double_size(table)
-                continue
-            next_coords_list = []
-            for point in border_points:
-                next_coords = get_possible_next_coords(
-                    table, point[0], point[1])
-                if len(next_coords) > 0:
-                    next_coords_list.extend(next_coords)
-            if len(next_coords_list) < 1:
-                table = center_table_and_double_size(table)
-                continue
-            index = random.randint(
-                0, len(next_coords_list) - 1)
-            (row, col) = next_coords_list[index]
-            possible_next_id_start = next_coords_list
+                next_coords_list_same_id = get_non_none_border_coords(
+                    table, border_coords_same_id)
+                index = random.randint(0, len(next_coords_list_same_id) - 1)
+                row, col = next_coords_list_same_id[index]
             enclosureIsSet = True
 
+        border_coords = get_non_none_border(table)
+        if len(border_coords) < 1:
+            table = center_table_and_double_size(table)
+            continue
+        next_coords_list = get_non_none_border_coords(table, border_coords)
+        if len(next_coords_list) < 1:
+            table = center_table_and_double_size(table)
+            continue
+        index = random.randint(
+            0, len(next_coords_list) - 1)
+        (row, col) = next_coords_list[index]
+
     return table
+
+
+def get_non_none_border_coords(table, border_points):
+    next_coords_list = []
+    for point in border_points:
+        next_coords = get_possible_next_coords(
+            table, point[0], point[1])
+        if len(next_coords) > 0:
+            next_coords_list.extend(next_coords)
+    return next_coords_list
 
 
 def isFilledOverCapacity(table, id_size):
@@ -100,7 +124,10 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
     (row, col) = start_coords
     while current_size < max_size:
         if table[row][col] != None:
-            print(f'overwriting {table[row][col]} with {enclosure_id}')
+            print("OLD:")
+            print_table(table)
+            print(f'overwriting {row}x{col} with id {enclosure_id}')
+            print(possible_new_coords)
 
         table[row][col] = enclosure_id
         current_size += 1
@@ -109,6 +136,7 @@ def generate_enclosure(start_row, start_column, enclosure_id, max_size, table):
 
         # Find which directions are free then decide which one to go to randomly
         possible_new_coords = get_possible_next_coords(table, row, col)
+        # TODO: if no possible coords means its stuck. Raise error?
         old_coords = []
         # randomly choose one of these
         while len(possible_new_coords) < 1:
@@ -137,7 +165,7 @@ def get_manhattan_distance(tuple1, tuple2):
     return abs(tuple2[0] - tuple1[0]) + abs(tuple2[1] - tuple1[1])
 
 
-def get_border_covered(table):
+def get_non_none_border(table):
     rows, cols = len(table), len(table[0])
     border = []
 
@@ -192,8 +220,6 @@ def center_new_table(table, row, col):
 
 
 def center_table_and_double_size(table):
-    print("----------------OLD--------------------")
-    print_table(table)
     rows = len(table)
     cols = len(table[0])
     new_rows = rows * 2
@@ -207,8 +233,6 @@ def center_table_and_double_size(table):
     for i in range(rows):
         for j in range(cols):
             centered_table[start_row + i][start_col + j] = table[i][j]
-    print("----------------NEW--------------------")
-    print_table(centered_table)
     return centered_table
 
 # Must always call before center_table_and_double_size
@@ -294,9 +318,11 @@ def numIslands(grid):
 
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
-        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    table = generate_enclosures(id_to_size)
-    print_table(table)
+        "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n100_m50_V-8613404.txt")
+    for i in range(1000):
+        table = generate_enclosures(id_to_size)
+        print(f'completed {i}')
+    # print_table(table)
     # for i in range(1000):
     #     map = {
     #         1: 25,
