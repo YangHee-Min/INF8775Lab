@@ -277,7 +277,7 @@ def print_table(table):
             row_string += '{:<{}}'.format(prefix +
                                           str(cell), column_widths[i] + 1)
         suffix = ","
-        if (j == len(row) - 1):
+        if (j == len(table) - 1):
             suffix = ""
         row_string += "]" + suffix
         print(row_string.rstrip())
