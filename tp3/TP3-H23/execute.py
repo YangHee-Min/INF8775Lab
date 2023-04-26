@@ -1,4 +1,6 @@
 from gen_enc import generate_enclosures
+from island import Island
+from pointage import calculPointage
 from gen_enc import print_table
 from read_values import read_file
 from typing import List, Dict
@@ -24,13 +26,16 @@ def execute(filepath: str, is_print: bool):
         i += 1
     """
     POPULATION_COUNT = 5
-    (enc_count, m_set_count, min_dist, id_size_map, weights) = read_file(filepath)
+    (enc_count, m_set_count, min_dist, min_dist_set,
+     id_size_map, weights) = read_file(filepath)
     # TODO: use m_set_count and min_dist in fitness function and if not respected score should be very low
     # TODO: Also use weights to determine how valuable an enclosure is
-    population_set = gen_population(id_size_map, POPULATION_COUNT)
+    population_set = gen_population(
+        id_size_map, POPULATION_COUNT, enc_count, min_dist, min_dist_set, weights)
     maximum_score = m_set_count ** 2
     iteration = 0
-    while not is_stop_criteria_met(iteration, population_set[0], maximum_score):
+    # population_set[0][0] corresponds to the fitness score of our best enclosure configuration yet
+    while not is_stop_criteria_met(iteration, population_set[0][0], maximum_score):
         elite_set = select_elite(population_set)
         crossover_set = gen_crossover_set(
             elite_set, (POPULATION_COUNT - len(elite_set)) // 2)
@@ -45,11 +50,12 @@ def execute(filepath: str, is_print: bool):
         print_table(population_set[len(population_set) - 1][1])
 
 
-def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
+def gen_population(id_to_size_map: Dict[int, int], population_count, number_of_enclosures, min_dist, min_dist_set, weights) -> list:
     initial_set = []
     while len(initial_set) < population_count:
         new_map = generate_enclosures(id_to_size_map)
-        new_fitness_score = get_fitness_score(new_map)
+        new_fitness_score = get_fitness_score(
+            new_map, number_of_enclosures, min_dist, min_dist_set, weights)
         # note that heappush puts our highest scores to the end of the priority queue
         initial_set.append((new_fitness_score, new_map))
     initial_set = heapq.nlargest(
@@ -57,7 +63,7 @@ def gen_population(id_to_size_map: Dict[int, int], population_count) -> list:
     return initial_set
 
 
-def is_stop_criteria_met(current_iteration: int, enclosure_map, threshold) -> bool:
+def is_stop_criteria_met(current_iteration: int, fitness_score, threshold) -> bool:
     # max iteration
     MAX_ITERATION_COUNT = 5
     if current_iteration >= MAX_ITERATION_COUNT:
@@ -65,7 +71,7 @@ def is_stop_criteria_met(current_iteration: int, enclosure_map, threshold) -> bo
 
     # TODO: need to change based on the actual input matrix given
 
-    if get_fitness_score(enclosure_map) >= threshold:
+    if fitness_score >= threshold:
         return True
 
     return False
@@ -78,8 +84,9 @@ def select_elite(sorted_heap: list) -> list:
     return heapq.nlargest(cutoff_count, sorted_heap, key=heap_comparison_func)
 
 
-def get_fitness_score(enclosure_map: set):
-    return random.randint(-100, 100)
+def get_fitness_score(enclosure_map: list, number_of_enclosures: int, min_dist, min_dist_set, weights):
+    return calculPointage(enclosure_map, number_of_enclosures,
+                          min_dist_set, min_dist, weights)
 
 
 def gen_crossover_set(prioritized_maps, children_count) -> list:
