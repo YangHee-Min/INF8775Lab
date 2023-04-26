@@ -62,7 +62,7 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
         index = random.randint(
             0, len(next_coords_list) - 1)
         (row, col) = next_coords_list[index]
-
+    table = remove_none_rows_cols(table)
     return table
 
 
@@ -267,13 +267,21 @@ def print_table(table):
                      for i in range(len(table[0]))]
 
     # Print each row with aligned columns
-    for row in table:
-        row_string = ''
+    print("[")
+    for j, row in enumerate(table):
+        row_string = '['
         for i, cell in enumerate(row):
-            value = '-' if cell is None else str(cell)
-            row_string += '{:<{}}'.format(value, column_widths[i] + 1)
+            prefix = ","
+            if (i == 0):
+                prefix = ""
+            row_string += '{:<{}}'.format(prefix +
+                                          str(cell), column_widths[i] + 1)
+        suffix = ","
+        if (j == len(row) - 1):
+            suffix = ""
+        row_string += "]" + suffix
         print(row_string.rstrip())
-    print()
+    print("]\n")
 
 
 def count_enclosure(grid):
@@ -361,7 +369,7 @@ def remove_none_rows_cols(arr):
 if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
-    for i in range(1000):
+    for i in range(1):
         table = generate_enclosures(id_to_size)
         print(f'--------------Completed {i}------------')
         print_table(table)

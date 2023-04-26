@@ -23,7 +23,7 @@ def execute(filepath: str, is_print: bool):
         P_next_gen = selection(P_i U P_c U Pm |P_i| f) # keep this size of P_i
         i += 1
     """
-    POPULATION_COUNT = 100
+    POPULATION_COUNT = 5
     (enc_count, m_set_count, min_dist, id_size_map, weights) = read_file(filepath)
     # TODO: use m_set_count and min_dist in fitness function and if not respected score should be very low
     # TODO: Also use weights to determine how valuable an enclosure is
