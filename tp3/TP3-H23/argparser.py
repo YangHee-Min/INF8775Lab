@@ -1,7 +1,7 @@
 import argparse
 import os.path
 import sys
-from execute import execute
+from genetic_algorithm import execute
 
 parser = argparse.ArgumentParser(
     description='Trouver le plus petit chemin .')

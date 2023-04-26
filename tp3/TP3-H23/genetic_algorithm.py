@@ -53,7 +53,7 @@ def execute(filepath: str, is_print: bool):
 def gen_population(id_to_size_map: Dict[int, int], population_count, number_of_enclosures, min_dist, min_dist_set, weights) -> list:
     initial_set = []
     while len(initial_set) < population_count:
-        new_map = generate_enclosures(id_to_size_map)
+        new_map = generate_enclosures(id_to_size_map, min_dist_set)
         new_fitness_score = get_fitness_score(
             new_map, number_of_enclosures, min_dist, min_dist_set, weights)
         # note that heappush puts our highest scores to the end of the priority queue
@@ -92,6 +92,7 @@ def get_fitness_score(enclosure_map: list, number_of_enclosures: int, min_dist, 
 def gen_crossover_set(prioritized_maps, children_count) -> list:
     crossover_set = prioritized_maps
     # TODO: do crossover between parents
+    # get order for which elements were placed into
     return crossover_set
 
 

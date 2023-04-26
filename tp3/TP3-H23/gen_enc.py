@@ -22,23 +22,30 @@ class Direction(Enum):
     DOWN = 4
 
 
-def generate_enclosures(id_to_size_map: Dict[int, int]):
+def create_configuration(id_to_size_map: Dict[int, int]):
+    enc_list = create_random_gen_list(id_to_size_map, m_set)
+    return generate_enclosures(enc_list)
+
+
+def generate_enclosures(enc_list):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
     row, col = get_center_coord(len(table[0]), len(table))
 
-    for id in id_to_size_map:
+    for id_size in enc_list:
+        id = id_size[0]
+        size = id_size[1]
         enclosureIsSet = False
         while not enclosureIsSet:
             try:
                 table = generate_enclosure(
-                    start_row=row, start_column=col, enclosure_id=id, max_size=id_to_size_map[id], table=table)
+                    start_row=row, start_column=col, enclosure_id=id, max_size=size, table=table)
                 enclosureIsSet = True
             except StuckException:
                 # if not enough space: clear and reset table
                 remove_value(table, id)
                 # check border values
                 # if filled too much then double in size
-                if isFilledOverCapacity(table, id_to_size_map[id]):
+                if isFilledOverCapacity(table, size):
                     table = center_table_and_double_size(table)
                 # get none None border
                 border_coords_same_id = get_edges(table)
@@ -64,6 +71,16 @@ def generate_enclosures(id_to_size_map: Dict[int, int]):
         (row, col) = next_coords_list[index]
     table = remove_none_rows_cols(table)
     return table
+
+
+def create_random_gen_list(id_to_size_map: Dict[int, int], m_set):
+    enc_list = []
+    for enc_id in id_to_size_map:
+        if enc_id in m_set:
+            enc_list.insert(0, (enc_id, id_to_size_map[enc_id]))
+        else:
+            enc_list.append((enc_id, id_to_size_map[enc_id]))
+    return enc_list
 
 
 def get_non_none_border_coords(table, border_points):
@@ -367,10 +384,10 @@ def remove_none_rows_cols(arr):
 
 
 if __name__ == "__main__":
-    (enc_count, m_set_count, min_dist, id_to_size, weights) = read_file(
+    (enc_count, m_set_count, min_dist, m_set, id_to_size, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(1):
-        table = generate_enclosures(id_to_size)
+        table = create_configuration(id_to_size)
         print(f'--------------Completed {i}------------')
         print_table(table)
         print_table(remove_none_rows_cols(table))

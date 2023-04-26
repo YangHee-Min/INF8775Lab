@@ -24,8 +24,6 @@ def calculPointage(graph, n, m, k, weight):
     island = Island(graph, n)
     allDistances = island.findAllDistances()
 
-    print(allDistances)
-
     v = calculerSousEnsemble(allDistances, m, k)
 
     totalWeight = 0
