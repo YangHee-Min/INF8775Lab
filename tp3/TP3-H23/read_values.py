@@ -25,4 +25,4 @@ def read_file(filename):
         weight_line = [int(val)
                        for val in f.readline().replace('\n', '').split(' ')]
         weights.append(weight_line)
-    return (enc_count, m_set_count, min_dist, id_to_size, weights)
+    return (enc_count, m_set_count, min_dist, id_to_size, weights, m_set)
