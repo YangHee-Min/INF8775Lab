@@ -1,7 +1,6 @@
 import random
 from answer import generate_txt_file
 from gen_enc import count_all_islands, count_islands, create_configuration, generate_enclosure, generate_enclosure_with_coords, generate_enclosures, get_edges, get_possible_next_coords, remove_none_rows_cols, remove_value
-from island import Island
 from pointage import calculPointage, calculate_theoretical_max
 from gen_enc import print_table
 from read_values import read_file
@@ -26,8 +25,8 @@ def execute(filepath: str, is_print: bool):
         i ← i + 1 ;
 
     """
-    (enc_count, m_set_count, min_dist, min_dist_set,
-     enclosure_id_to_size, weights) = read_file(filepath)
+    (enc_count, m_set_count, min_dist, enclosure_id_to_size,
+     min_dist_set, weights) = read_file(filepath)
 
     current_enclosure_config = create_configuration(
         enclosure_id_to_size, min_dist_set)
@@ -48,10 +47,9 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
     iteration = 0
     best_score = -inf
     best_config = []
-    time_start = time.time()
     theoretical_max = calculate_theoretical_max(weights, len(min_dist_set))
     acceptance_prob = 1
-    while time.time() < time_start + 120:  # set a small temperature threshold
+    while True:  # set a small temperature threshold
         print(f'iteration {iteration}: {current_cost}')
         new_enc_config = perturb(
             current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
@@ -62,6 +60,7 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         if new_cost > best_score:
             best_config = new_enc_config
             best_score = new_cost
+            generate_txt_file(best_config, enc_count)
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
             enc_count_to_regen = 1 if round(
@@ -78,13 +77,6 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
                 current_cost = new_cost
         temperature = cooling_schedule(temperature)
         iteration += 1
-
-    print(f'theoretical max: {theoretical_max}')
-    print(f'best score: {best_score}')
-    print_table(best_config)
-
-    generate_txt_file(best_config, "answer.txt", enc_count)
-    return current_enclosure_config
 
 
 def calculate_cost(new_enc_config, enc_count,
@@ -160,6 +152,6 @@ def acceptance_probability(cost_diff, temperature, sample_size):
 
 
 if __name__ == "__main__":
-    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n100_m50_V-8613404.txt"
+    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
     is_print = True
     answer_grid = execute(filepath, is_print)

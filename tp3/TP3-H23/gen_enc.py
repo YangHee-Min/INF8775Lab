@@ -459,7 +459,7 @@ def remove_none_rows_cols(arr):
 
 
 if __name__ == "__main__":
-    (enc_count, m_set_count, min_dist, m_set, id_to_size, weights) = read_file(
+    (enc_count, m_set_count, min_dist, id_to_size, m_set, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(1):
         table = create_configuration(id_to_size, m_set)
