@@ -8,6 +8,7 @@ from typing import List, Dict
 import numpy as np
 import copy
 from math import inf
+import time
 
 
 def execute(filepath: str, is_print: bool):
@@ -30,7 +31,7 @@ def execute(filepath: str, is_print: bool):
     current_enclosure_config = create_configuration(
         enclosure_id_to_size, min_dist_set)
     simulated_annealing(initial_config=current_enclosure_config, id_to_map=enclosure_id_to_size, enc_count=enc_count, min_dist_set=min_dist_set,
-                        min_dist=min_dist, weights=weights, initial_temperature=10000)
+                        min_dist=min_dist, weights=weights, initial_temperature=100)
     if is_print:
         print_table(current_enclosure_config)
     return current_enclosure_config
@@ -45,8 +46,9 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
     enc_count_to_regen = enc_count - 1
     iteration = 0
     best_score = -inf
-    while temperature > 1e-10:  # set a small temperature threshold
-        print(f'iteration {iteration}')
+    time_start = time.time()
+    while time.time() < time_start + 120:  # temperature > 1e-10:  # set a small temperature threshold
+        print(f'iteration {iteration}: {current_cost}')
         new_enc_config = perturb(
             current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
         new_cost = calculate_cost(new_enc_config, enc_count,
@@ -58,8 +60,8 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
             best_score = new_cost
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
-            enc_count_to_regen = len(min_dist_set) if enc_count_to_regen < len(
-                min_dist_set) else round(enc_count_to_regen / 2)
+            # enc_count_to_regen = len(min_dist_set) if enc_count_to_regen < len(
+            #     min_dist_set) else round(enc_count_to_regen / 2)
             current_cost = new_cost
         else:
             acceptance_prob = acceptance_probability(cost_diff, temperature)
@@ -152,6 +154,6 @@ def acceptance_probability(cost_diff, temperature, scaling_factor=300):
 
 
 if __name__ == "__main__":
-    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
+    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/ex_n8_m3.txt"
     is_print = True
     execute(filepath, is_print)
