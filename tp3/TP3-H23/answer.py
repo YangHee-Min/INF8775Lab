@@ -7,11 +7,12 @@ def generate_txt_file(answer_grid: list, enc_count):
                 continue
             label_to_coords_map[label].append(row)
             label_to_coords_map[label].append(col)
-    file = ""
+    print()
     for line in label_to_coords_map:
+        line_string = ""
         for i, elem in enumerate(line):
             suffix = " "
             if (i == len(line) - 1):
-                suffix = "\n"
-            file += (str(elem) + suffix)
-    print(file)
+                suffix = ""
+            line_string += (str(elem) + suffix)
+        print(line_string)
