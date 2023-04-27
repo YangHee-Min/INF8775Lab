@@ -1,7 +1,8 @@
 import random
+from answer import generate_txt_file
 from gen_enc import count_all_islands, count_islands, create_configuration, generate_enclosure, generate_enclosure_with_coords, generate_enclosures, get_edges, get_possible_next_coords, remove_none_rows_cols, remove_value
 from island import Island
-from pointage import calculPointage
+from pointage import calculPointage, calculate_theoretical_max
 from gen_enc import print_table
 from read_values import read_file
 from typing import List, Dict
@@ -43,11 +44,12 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
                                   min_dist_set, min_dist, weights)
     temperature = initial_temperature
     print_table(current_enclosure_config)
-    enc_count_to_regen = enc_count - 1
+    enc_count_to_regen = 1  # number of enclosures we are gonna regenerate
     iteration = 0
     best_score = -inf
+    best_config = []
     time_start = time.time()
-    while time.time() < time_start + 120:  # temperature > 1e-10:  # set a small temperature threshold
+    while time.time() < time_start + 1 and temperature > 1e-10:  # set a small temperature threshold
         print(f'iteration {iteration}: {current_cost}')
         new_enc_config = perturb(
             current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
@@ -57,20 +59,15 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         cost_diff = new_cost - current_cost
         if new_cost > best_score:
             print("BEST!: " + str(new_cost))
+            best_config = new_enc_config
             best_score = new_cost
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
             # enc_count_to_regen = len(min_dist_set) if enc_count_to_regen < len(
-            #     min_dist_set) else round(enc_count_to_regen / 2)
+            #     min_dist_set) else round(enc_count_to_regen - 1)
             current_cost = new_cost
         else:
             acceptance_prob = acceptance_probability(cost_diff, temperature)
-            '''
-            sinon
-            pi = e ^(f (si ) - f (s))/θi
-            si+1 ← s avec probabilité pi - 1
-            si+1 ← si avec probabilité pi
-            '''
             random_number = np.random.rand()
             if acceptance_prob > random_number:
                 current_enclosure_config = copy.deepcopy(new_enc_config)
@@ -78,7 +75,12 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         temperature = cooling_schedule(temperature)
         iteration += 1
 
-    print_table(current_enclosure_config)
+    theoretical_max = calculate_theoretical_max(weights, len(min_dist_set))
+    print(f'theoretical max: {theoretical_max}')
+    print(f'best score: {best_score}')
+    print_table(best_config)
+
+    generate_txt_file(best_config, "answer.txt", enc_count)
     return current_enclosure_config
 
 
@@ -88,7 +90,8 @@ def calculate_cost(new_enc_config, enc_count,
                           min_dist_set, min_dist, weights)
 
 
-def cooling_schedule(temperature, cooling_fraction=0.95):
+# Higher cooling fraction = more exploration
+def cooling_schedule(temperature, cooling_fraction=0.99):
     return fixed_fraction_cooling(temperature, cooling_fraction)
 
 
@@ -154,6 +157,6 @@ def acceptance_probability(cost_diff, temperature, scaling_factor=300):
 
 
 if __name__ == "__main__":
-    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/ex_n8_m3.txt"
+    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
     is_print = True
-    execute(filepath, is_print)
+    answer_grid = execute(filepath, is_print)

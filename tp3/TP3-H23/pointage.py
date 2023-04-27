@@ -20,6 +20,14 @@ def calculerSousEnsemble(allDistances, m, k):
         return 0
 
 
+def calculate_theoretical_max(weights, m):
+    theoretical_max = 0
+    for row in weights:
+        for elem in row:
+            theoretical_max += elem
+    return m**2 - theoretical_max
+
+
 def calculPointage(graph, n, m, k, weight):
     island = Island(graph, n)
     allDistances = island.findAllDistances()
