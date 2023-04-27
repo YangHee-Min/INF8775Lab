@@ -13,5 +13,5 @@ def generate_txt_file(answer_grid: list, enc_count):
             suffix = " "
             if (i == len(line) - 1):
                 suffix = "\n"
-            file = + (str(elem) + suffix)
+            file += (str(elem) + suffix)
     print(file)

@@ -31,8 +31,6 @@ def calculPointage(graph, n, m, k, weight):
     calculDistance = CalculDistance(graph, n)
     allDistances = calculDistance.findAllDistances()
 
-    print(allDistances)
-
     v = calculerSousEnsemble(allDistances, m, k)
 
     totalWeight = 0

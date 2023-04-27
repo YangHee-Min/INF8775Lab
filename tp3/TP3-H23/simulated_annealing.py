@@ -26,7 +26,7 @@ def execute(filepath: str, is_print: bool):
 
     """
     (enc_count, m_set_count, min_dist, enclosure_id_to_size,
-     min_dist_set, weights) = read_file(filepath)
+     weights, min_dist_set) = read_file(filepath)
 
     current_enclosure_config = create_configuration(
         enclosure_id_to_size, min_dist_set)
@@ -42,7 +42,6 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
     current_cost = calculate_cost(current_enclosure_config, enc_count,
                                   min_dist_set, min_dist, weights)
     temperature = initial_temperature
-    print_table(current_enclosure_config)
     enc_count_to_regen = enc_count - 1  # number of enclosures we are gonna regenerate
     iteration = 0
     best_score = -inf
@@ -60,6 +59,7 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         if new_cost > best_score:
             best_config = new_enc_config
             best_score = new_cost
+            print(f'iteration {iteration}: {best_score}')
             generate_txt_file(best_config, enc_count)
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
