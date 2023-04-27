@@ -1,10 +1,12 @@
 #!/bin/bash
 
+is_print=false
+
 # Définition des options
 while getopts ":e:p" opt; do
   case $opt in
     e) path="$OPTARG";;
-    p) is_print=false;;
+    p) is_print=true;;
     \?) echo "Option invalide: -$OPTARG" >&2;;
   esac
 done
@@ -15,4 +17,4 @@ if [ -z "$path" ]; then
   exit 1
 fi
 
-python argparser.py -e "$path" $is_print
+python argparser.py -e "$path" ${is_print:+-p}
