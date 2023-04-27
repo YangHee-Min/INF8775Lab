@@ -7,6 +7,7 @@ from read_values import read_file
 from typing import List, Dict
 import numpy as np
 import copy
+from math import inf
 
 
 def execute(filepath: str, is_print: bool):
@@ -29,7 +30,7 @@ def execute(filepath: str, is_print: bool):
     current_enclosure_config = create_configuration(
         enclosure_id_to_size, min_dist_set)
     simulated_annealing(initial_config=current_enclosure_config, id_to_map=enclosure_id_to_size, enc_count=enc_count, min_dist_set=min_dist_set,
-                        min_dist=min_dist, weights=weights, initial_temperature=1.0)
+                        min_dist=min_dist, weights=weights, initial_temperature=10000)
     if is_print:
         print_table(current_enclosure_config)
     return current_enclosure_config
@@ -41,21 +42,39 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
                                   min_dist_set, min_dist, weights)
     temperature = initial_temperature
     print_table(current_enclosure_config)
+    enc_count_to_regen = enc_count - 1
+    iteration = 0
+    best_score = -inf
     while temperature > 1e-10:  # set a small temperature threshold
+        print(f'iteration {iteration}')
         new_enc_config = perturb(
-            current_enclosure_config, enc_count, random.randint(1, enc_count - 1), id_to_map)
-        print_table(new_enc_config)
+            current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
         new_cost = calculate_cost(new_enc_config, enc_count,
                                   min_dist_set, min_dist, weights)
 
         cost_diff = new_cost - current_cost
-        acceptance_prob = acceptance_probability(cost_diff, temperature)
-        random_number = np.random.rand()
-        if acceptance_prob > random_number:
+        if new_cost > best_score:
+            print("BEST!: " + str(new_cost))
+            best_score = new_cost
+        if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
+            enc_count_to_regen = len(min_dist_set) if enc_count_to_regen < len(
+                min_dist_set) else round(enc_count_to_regen / 2)
             current_cost = new_cost
+        else:
+            acceptance_prob = acceptance_probability(cost_diff, temperature)
+            '''
+            sinon
+            pi = e ^(f (si ) - f (s))/θi
+            si+1 ← s avec probabilité pi - 1
+            si+1 ← si avec probabilité pi
+            '''
+            random_number = np.random.rand()
+            if acceptance_prob > random_number:
+                current_enclosure_config = copy.deepcopy(new_enc_config)
+                current_cost = new_cost
         temperature = cooling_schedule(temperature)
-        print_table(current_enclosure_config)
+        iteration += 1
 
     print_table(current_enclosure_config)
     return current_enclosure_config
@@ -124,11 +143,12 @@ def perturb(enclosure_config, enc_count, enc_count_to_regen, id_to_map: Dict[int
     return new_config
 
 
-def acceptance_probability(cost_diff, temperature):
-    if cost_diff < 0:
+def acceptance_probability(cost_diff, temperature, scaling_factor=300):
+    scaled_cost_diff = cost_diff / scaling_factor
+    if scaled_cost_diff > 0:
         return 1.0
     else:
-        return np.exp(cost_diff / temperature)
+        return np.exp(scaled_cost_diff / temperature)
 
 
 if __name__ == "__main__":
