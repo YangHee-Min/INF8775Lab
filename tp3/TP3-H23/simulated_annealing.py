@@ -49,7 +49,6 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
     theoretical_max = calculate_theoretical_max(weights, len(min_dist_set))
     acceptance_prob = 1
     while True:  # set a small temperature threshold
-        print(f'iteration {iteration}: {current_cost}')
         new_enc_config = perturb(
             current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
         new_cost = calculate_cost(new_enc_config, enc_count,
@@ -91,10 +90,7 @@ def cooling_schedule(temperature, cooling_fraction=0.995):
 
 
 def fixed_fraction_cooling(initial_temperature, cooling_fraction):
-    temperature = initial_temperature
-    while True:
-        temperature *= cooling_fraction
-        return temperature
+    return initial_temperature * cooling_fraction
 
 
 def perturb(enclosure_config, enc_count, enc_count_to_regen, id_to_map: Dict[int, int]):
