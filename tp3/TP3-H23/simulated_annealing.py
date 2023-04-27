@@ -58,7 +58,6 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         if new_cost > best_score:
             best_config = new_enc_config
             best_score = new_cost
-            print(f'iteration {iteration}: {best_score}')
             generate_txt_file(best_config, enc_count)
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
