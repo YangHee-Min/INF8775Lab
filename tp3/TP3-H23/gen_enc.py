@@ -129,10 +129,8 @@ def generate_enclosures_og(enc_list):
 def create_random_gen_list(id_to_size_map: Dict[int, int], m_set):
     enc_list = []
     for enc_id in id_to_size_map:
-        if enc_id in m_set:
-            enc_list.insert(0, (enc_id, id_to_size_map[enc_id]))
-        else:
-            enc_list.append((enc_id, id_to_size_map[enc_id]))
+        enc_list.append((enc_id, id_to_size_map[enc_id]))
+        random.shuffle(enc_list)
     return enc_list
 
 

@@ -31,8 +31,8 @@ def execute(filepath: str, is_print: bool):
 
     current_enclosure_config = create_configuration(
         enclosure_id_to_size, min_dist_set)
-    simulated_annealing(initial_config=current_enclosure_config, id_to_map=enclosure_id_to_size, enc_count=enc_count, min_dist_set=min_dist_set,
-                        min_dist=min_dist, weights=weights, initial_temperature=100)
+    current_enclosure_config = simulated_annealing(initial_config=current_enclosure_config, id_to_map=enclosure_id_to_size, enc_count=enc_count, min_dist_set=min_dist_set,
+                                                   min_dist=min_dist, weights=weights, initial_temperature=100)
     if is_print:
         print_table(current_enclosure_config)
     return current_enclosure_config
@@ -44,12 +44,14 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
                                   min_dist_set, min_dist, weights)
     temperature = initial_temperature
     print_table(current_enclosure_config)
-    enc_count_to_regen = 1  # number of enclosures we are gonna regenerate
+    enc_count_to_regen = enc_count - 1  # number of enclosures we are gonna regenerate
     iteration = 0
     best_score = -inf
     best_config = []
     time_start = time.time()
-    while time.time() < time_start + 1 and temperature > 1e-10:  # set a small temperature threshold
+    theoretical_max = calculate_theoretical_max(weights, len(min_dist_set))
+    acceptance_prob = 1
+    while time.time() < time_start + 120:  # set a small temperature threshold
         print(f'iteration {iteration}: {current_cost}')
         new_enc_config = perturb(
             current_enclosure_config, enc_count, enc_count_to_regen, id_to_map)
@@ -58,16 +60,18 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
 
         cost_diff = new_cost - current_cost
         if new_cost > best_score:
-            print("BEST!: " + str(new_cost))
             best_config = new_enc_config
             best_score = new_cost
         if cost_diff > 0:
             current_enclosure_config = copy.deepcopy(new_enc_config)
+            enc_count_to_regen = 1 if round(
+                enc_count_to_regen * acceptance_prob) < 1 else round(enc_count_to_regen * acceptance_prob)
             # enc_count_to_regen = len(min_dist_set) if enc_count_to_regen < len(
             #     min_dist_set) else round(enc_count_to_regen - 1)
             current_cost = new_cost
         else:
-            acceptance_prob = acceptance_probability(cost_diff, temperature)
+            acceptance_prob = acceptance_probability(
+                cost_diff, temperature, enc_count)
             random_number = np.random.rand()
             if acceptance_prob > random_number:
                 current_enclosure_config = copy.deepcopy(new_enc_config)
@@ -75,7 +79,6 @@ def simulated_annealing(initial_config, id_to_map, enc_count, min_dist_set, min_
         temperature = cooling_schedule(temperature)
         iteration += 1
 
-    theoretical_max = calculate_theoretical_max(weights, len(min_dist_set))
     print(f'theoretical max: {theoretical_max}')
     print(f'best score: {best_score}')
     print_table(best_config)
@@ -91,7 +94,7 @@ def calculate_cost(new_enc_config, enc_count,
 
 
 # Higher cooling fraction = more exploration
-def cooling_schedule(temperature, cooling_fraction=0.99):
+def cooling_schedule(temperature, cooling_fraction=0.995):
     return fixed_fraction_cooling(temperature, cooling_fraction)
 
 
@@ -148,8 +151,8 @@ def perturb(enclosure_config, enc_count, enc_count_to_regen, id_to_map: Dict[int
     return new_config
 
 
-def acceptance_probability(cost_diff, temperature, scaling_factor=300):
-    scaled_cost_diff = cost_diff / scaling_factor
+def acceptance_probability(cost_diff, temperature, sample_size):
+    scaled_cost_diff = cost_diff / ((sample_size ** 2) * 100)
     if scaled_cost_diff > 0:
         return 1.0
     else:
@@ -157,6 +160,6 @@ def acceptance_probability(cost_diff, temperature, scaling_factor=300):
 
 
 if __name__ == "__main__":
-    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt"
+    filepath = "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n100_m50_V-8613404.txt"
     is_print = True
     answer_grid = execute(filepath, is_print)
