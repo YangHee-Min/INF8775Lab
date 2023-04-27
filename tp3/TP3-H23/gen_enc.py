@@ -22,12 +22,65 @@ class Direction(Enum):
     DOWN = 4
 
 
-def create_configuration(id_to_size_map: Dict[int, int]):
+def create_configuration(id_to_size_map: Dict[int, int], m_set):
     enc_list = create_random_gen_list(id_to_size_map, m_set)
     return generate_enclosures(enc_list)
 
 
 def generate_enclosures(enc_list):
+    table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
+    row, col = get_center_coord(len(table[0]), len(table))
+
+    for id_size in enc_list:
+        (table, row, col) = generate_enclosure_with_coords(
+            table, id_size, row, col)
+
+    table = remove_none_rows_cols(table)
+    return table
+
+
+def generate_enclosure_with_coords(table, id_size, row, col):
+    id = id_size[0]
+    size = id_size[1]
+    enclosureIsSet = False
+    while not enclosureIsSet:
+        try:
+            table = generate_enclosure(
+                start_row=row, start_column=col, enclosure_id=id, max_size=size, table=table)
+            enclosureIsSet = True
+        except StuckException:
+            # if not enough space: clear and reset table
+            remove_value(table, id)
+            # check border values
+            # if filled too much then double in size
+            if isFilledOverCapacity(table, size):
+                table = center_table_and_double_size(table)
+            # get none None border
+            border_coords_same_id = get_edges(table)
+            # if boorder_coords_same_id is Empty it means we have the Empty 2d array. Just center it and go next.
+            if len(border_coords_same_id) < 1:
+                row, col = get_center_coord(len(table[0]), len(table))
+                continue
+            next_coords_list_same_id = get_non_none_border_coords(
+                table, border_coords_same_id)
+            index = random.randint(0, len(next_coords_list_same_id) - 1)
+            row, col = next_coords_list_same_id[index]
+
+    border_coords = get_edges(table)
+    if len(border_coords) < 1:
+        table = center_table_and_double_size(table)
+        return generate_enclosure_with_coords(table, id_size, row, col)
+    next_coords_list = get_non_none_border_coords(table, border_coords)
+    if len(next_coords_list) < 1:
+        table = center_table_and_double_size(table)
+        return generate_enclosure_with_coords(table, id_size, row, col)
+    index = random.randint(
+        0, len(next_coords_list) - 1)
+    (row, col) = next_coords_list[index]
+    return (table, row, col)
+
+
+def generate_enclosures_og(enc_list):
     table = generate_field(TABLE_WIDTH, TABLE_HEIGHT)
     row, col = get_center_coord(len(table[0]), len(table))
 
@@ -203,6 +256,25 @@ def get_edges_with_value(table, value):
     return edges
 
 
+def get_edges(table):
+    rows, cols = len(table), len(table[0])
+    edges = []
+
+    # Check each element and its neighbors
+    for i in range(rows):
+        for j in range(cols):
+            if table[i][j] != None:
+                if i == 0 or i == rows-1 or j == 0 or j == cols-1:
+                    # Element is on the edge of the array
+                    edges.append((i, j))
+                else:
+                    # Check if any neighbors are not the target value
+                    if table[i-1][j] is not None or table[i+1][j] is not None or table[i][j-1] is not None or table[i][j+1] is not None:
+                        edges.append((i, j))
+
+    return edges
+
+
 def get_possible_next_coords(table, row, col):
     possible_new_coords = []
     for direction in Direction:
@@ -324,30 +396,35 @@ def count_enclosure(grid):
 
 
 def count_all_islands(table, enc_count):
-    less_than_1 = []
-    more_than_1 = []
+    count = 0
     for i in range(enc_count):
-        count = count_islands(table, i)
-        if count > 1:
-            more_than_1.append(i)
-        if count < 1:
-            less_than_1.append(i)
-
-    more_than_1_str = ""
-
-    less_than_1_str = ""
-    exception = False
-    if len(less_than_1) > 0:
-        less_than_1_str = f'< 1: {less_than_1}\n'
-        exception = True
-    if len(more_than_1) > 0:
-        more_than_1_str = f'< 1: {more_than_1}\n'
-        exception = True
-    if exception:
-        raise Exception(less_than_1_str + more_than_1_str)
+        count += count_islands_with_label(table, i)
+    return count
 
 
-def count_islands(grid, label):
+def count_islands(grid):
+    def dfs(i, j):
+        if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]):
+            return
+        if visited[i][j] or grid[i][j] == None:
+            return
+        visited[i][j] = True
+        dfs(i+1, j)
+        dfs(i-1, j)
+        dfs(i, j+1)
+        dfs(i, j-1)
+
+    count = 0
+    visited = [[False]*len(grid[0]) for _ in range(len(grid))]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if not visited[i][j] and grid[i][j] != None:
+                count += 1
+                dfs(i, j)
+    return count
+
+
+def count_islands_with_label(grid, label):
     def dfs(i, j):
         if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]):
             return
@@ -387,23 +464,18 @@ if __name__ == "__main__":
     (enc_count, m_set_count, min_dist, m_set, id_to_size, weights) = read_file(
         "D:/POLY/H2023/INF8775/INF8775Lab/tp3/TP3-H23/n20_m15_V-74779.txt")
     for i in range(1):
-        table = create_configuration(id_to_size)
-        print(f'--------------Completed {i}------------')
+        table = create_configuration(id_to_size, m_set)
+        # table = [
+        #     [None, None, 2, None, None],
+        #     [None, 3, 1, 1, None],
+        #     [4, 4, 0, 0, 1],
+        #     [None, 5, 0, 0, None],
+        #     [None, None, 1, None, None],
+        #     [None, None, None, None, None]
+        # ]
+        # print(get_edges(table))
+        # print(f'--------------Completed {i}------------')
         print_table(table)
-        print_table(remove_none_rows_cols(table))
-        print(f'island count: {count_enclosure(table)}')
-        count_all_islands(table, enc_count)
+        # print_table(remove_none_rows_cols(table))
+        # print(f'island count: {count_enclosure(table)}')
         # count_all_islands(table, enc_count)
-    # print_table(table)
-    # for i in range(1000):
-    #     map = {
-    #         1: 25,
-    #         2: 5,
-    #         3: 2,
-    #     }
-    #     table = generate_enclosures(map)
-    #     print("----------------FINAL-------------------")
-    #     print_table(table)
-    #     numislands = numIslands(table)
-    #     if (numislands > 1):
-    #         raise Exception("ERROR!")
