@@ -1,7 +1,6 @@
-
 from read_values import read_file
 from gen_enc import generate_enclosures
-from island import Island
+from island import CalculDistance
 
 from datetime import datetime
 
@@ -29,16 +28,19 @@ def calculate_theoretical_max(weights, m):
 
 
 def calculPointage(graph, n, m, k, weight):
-    island = Island(graph, n)
-    allDistances = island.findAllDistances()
+    calculDistance = CalculDistance(graph, n)
+    allDistances = calculDistance.findAllDistances()
+
+    print(allDistances)
 
     v = calculerSousEnsemble(allDistances, m, k)
 
     totalWeight = 0
     for i in range(n):
-        for j in range(n):
-            if i != j:
-                totalWeight += weight[i][j] * allDistances[i][j]
+        for j in range(i+1, n):
+            totalWeight += weight[i][j] * allDistances[i][j]
+            totalWeight += weight[j][i] * allDistances[j][i]
+
     return v - totalWeight
 
 

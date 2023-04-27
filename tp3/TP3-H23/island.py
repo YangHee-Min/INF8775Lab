@@ -11,11 +11,10 @@ def findDistance(island1, island2):
             point2 = island2[j]
             distp1p2 = abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
             dist = min(dist, distp1p2)
-
     return dist
 
 
-class Island:
+class CalculDistance:
     def __init__(self, grid, n):
         self.grid = grid
         self.n = n
@@ -24,24 +23,53 @@ class Island:
 
         for i in range(n):
             self.enclos[i] = []
+        
+    def getVoisins(self, x, y):
+        longueurMaxX = len(self.grid[0])
+        longueurMaxY = len(self.grid)
+        
+        returnList = []
+    
+        x_1 = x-1
+        x_2 = x+1
+        y_1 = y-1
+        y_2 = y+1
 
-    def __findIslands(self):
+        if x_1 >= 0:
+            returnList.append((x_1, y))
+        if x_2 < longueurMaxX:
+            returnList.append((x_2, y))
+        if y_1 >= 0:
+            returnList.append((x, y_1))
+        if y_2 < longueurMaxY:
+            returnList.append((x, y_2))
+        return returnList
+    
+
+    def isExtremite(self, x, y):
+        value = self.grid[y][x]
+        voisins = self.getVoisins(x, y)
+        
+        for voisin in voisins: 
+            if self.grid[voisin[1]][voisin[0]] != value:
+                return True
+        
+        return False
+    
+    def __trouverEnclos(self):
         for y in range(len(self.grid)):
             for x in range(len(self.grid[0])):
-                if self.grid[y][x] != None:
-                    self.enclos[self.grid[y][x]].append((y, x))
-
+                if self.grid[y][x] != None and self.isExtremite(x, y):
+                    self.enclos[self.grid[y][x]].append((x, y))
+    
     def findAllDistances(self):
-        self.__findIslands()
-
+        self.__trouverEnclos()
         for i in range(self.n):
-            for j in range(self.n):
-                if i == j:
-                    self.distances[i][j] = 0
-                else:
-                    distance = findDistance(self.enclos[i], self.enclos[j])
-                    self.distances[i][j] = distance
-                    self.distances[j][i] = distance
+            for j in range(i+1, self.n):
+                distance = findDistance(self.enclos[i], self.enclos[j])
+                self.distances[i][j] = distance
+                self.distances[j][i] = distance
+                    
         return self.distances
 
 
